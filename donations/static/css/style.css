@@ -1897,3 +1897,36 @@ footer .bottom-line--icons a img {
   font-size: 0.9rem;
   padding: 5px 10px;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 1em 0;
+}
+
+.step-links {
+  display: flex;
+  gap: 0.5em;
+}
+
+.step-links a, .step-links span.current {
+  padding: 0.5em 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.step-links a:hover {
+  background-color: #eee;
+}
+
+.step-links span.current {
+  background-color: #ddd;
+  cursor: default;
+}
+
+.help--buttons a.active {
+  background-color: #f0f0f0; /* Пример цвета фона для активной вкладки */
+  border-bottom: 2px solid #333; /* Пример нижней границы для активной вкладки */
+  color: #333; /* Пример цвета текста для активной вкладки */
+}
