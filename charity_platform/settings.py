@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from decouple import config
 
@@ -102,8 +103,12 @@ USE_TZ = True
 
 # Pliki statyczne (CSS, JavaScript, Obrazy)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'donations/static'),
+]
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Domyślny typ klucza podstawowego

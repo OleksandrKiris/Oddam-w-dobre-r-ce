@@ -71,16 +71,16 @@
 <section id="help" class="help">
   <h2>Komu pomagamy?</h2>
   <ul class="help--buttons">
-    <li data-id="1"><a href="#" class="btn btn--without-border active">Fundacjom</a></li>
-    <li data-id="2"><a href="#" class="btn btn--without-border">Organizacjom pozarządowym</a></li>
-    <li data-id="3"><a href="#" class="btn btn--without-border">Lokalnym zbiórkom</a></li>
+    <li data-id="foundations"><a href="#help" class="btn btn--without-border active" data-target="foundations">Fundacjom</a></li>
+    <li data-id="ngos"><a href="#help" class="btn btn--without-border" data-target="ngos">Organizacjom pozarządowym</a></li>
+    <li data-id="local_collections"><a href="#help" class="btn btn--without-border" data-target="local_collections">Lokalnym zbiórkom</a></li>
   </ul>
 
   <!-- SLIDE 1 -->
-  <div class="help--slides active" data-id="1">
+  <div class="help--slides active" data-id="foundations">
     <p>W naszej bazie znajdziesz listę zweryfikowanych Fundacji, z którymi współpracujemy. Możesz sprawdzić czym się zajmują, komu pomagają i czego potrzebują.</p>
     <ul class="help--slides-items">
-      {% for institution in foundations %}
+      {% for institution in page_obj_foundations %}
       <li>
         <div class="col">
           <div class="title">{{ institution.name }}</div>
@@ -96,15 +96,32 @@
       </li>
       {% endfor %}
     </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj_foundations.has_previous %}
+          <a href="?page_foundations=1#help" data-target="foundations">&laquo; pierwsza</a>
+          <a href="?page_foundations={{ page_obj_foundations.previous_page_number }}#help" data-target="foundations">poprzednia</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ page_obj_foundations.number }} of {{ page_obj_foundations.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj_foundations.has_next %}
+          <a href="?page_foundations={{ page_obj_foundations.next_page_number }}#help" data-target="foundations">następna</a>
+          <a href="?page_foundations={{ page_obj_foundations.paginator.num_pages }}#help" data-target="foundations">ostatnia &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
   </div>
 
   <!-- SLIDE 2 -->
-  <div class="help--slides" data-id="2">
+  <div class="help--slides" data-id="ngos">
     <p>
       Lorem ipsum dolor, sit amet consectetur adipisicing elit. Hic officiis mollitia dolor, neque aspernatur accusamus debitis. Ducimus, officia. Quia, sunt illum! Non iste placeat ab ipsum alias quos suscipit corporis!
     </p>
     <ul class="help--slides-items">
-      {% for institution in ngos %}
+      {% for institution in page_obj_ngos %}
       <li>
         <div class="col">
           <div class="title">{{ institution.name }}</div>
@@ -120,13 +137,30 @@
       </li>
       {% endfor %}
     </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj_ngos.has_previous %}
+          <a href="?page_ngos=1#help" data-target="ngos">&laquo; pierwsza</a>
+          <a href="?page_ngos={{ page_obj_ngos.previous_page_number }}#help" data-target="ngos">poprzednia</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ page_obj_ngos.number }} of {{ page_obj_ngos.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj_ngos.has_next %}
+          <a href="?page_ngos={{ page_obj_ngos.next_page_number }}#help" data-target="ngos">następna</a>
+          <a href="?page_ngos={{ page_obj_ngos.paginator.num_pages }}#help" data-target="ngos">ostatnia &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
   </div>
 
   <!-- SLIDE 3 -->
-  <div class="help--slides" data-id="3">
+  <div class="help--slides" data-id="local_collections">
     <p>Lorem ipsum dolor sit amet, his ocurreret persequeris ea, ad utinam laudem duo. Verterem adipisci partiendo eos ne, ea his reque quaeque recteque, ne quo lobortis intellegam.</p>
     <ul class="help--slides-items">
-      {% for institution in local_collections %}
+      {% for institution in page_obj_local_collections %}
       <li>
         <div class="col">
           <div class="title">{{ institution.name }}</div>
@@ -142,6 +176,24 @@
       </li>
       {% endfor %}
     </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj_local_collections.has_previous %}
+          <a href="?page_local_collections=1#help" data-target="local_collections">&laquo; pierwsza</a>
+          <a href="?page_local_collections={{ page_obj_local_collections.previous_page_number }}#help" data-target="local_collections">poprzednia</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ page_obj_local_collections.number }} of {{ page_obj_local_collections.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj_local_collections.has_next %}
+          <a href="?page_local_collections={{ page_obj_local_collections.next_page_number }}#help" data-target="local_collections">następna</a>
+          <a href="?page_local_collections={{ page_obj_local_collections.paginator.num_pages }}#help" data-target="local_collections">ostatnia &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
   </div>
 </section>
 {% endblock %}
+
