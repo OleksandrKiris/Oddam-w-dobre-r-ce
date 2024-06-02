@@ -1,3 +1,4 @@
+<!-- donations/templates/base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="pl">
@@ -17,11 +18,17 @@
             <li><a href="{% url 'donations:register' %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>
         </ul>
         <ul>
-            <li><a href="{% url 'donations:index' %}" class="btn btn--without-border active">Start</a></li>
+            <!-- Якорная ссылка на главную страницу -->
+            <li><a href="{% url 'donations:index' %}#start" class="btn btn--without-border">Start</a></li>
+            <!-- Якорная ссылка на секцию "steps" -->
             <li><a href="{% url 'donations:index' %}#steps" class="btn btn--without-border">O co chodzi?</a></li>
+            <!-- Якорная ссылка на секцию "about-us" -->
             <li><a href="{% url 'donations:index' %}#about-us" class="btn btn--without-border">O nas</a></li>
+            <!-- Якорная ссылка на секцию "help" -->
             <li><a href="{% url 'donations:index' %}#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
+            <!-- Ссылка на страницу добавления пожертвования -->
             <li><a href="{% url 'donations:add_donation' %}" class="btn btn--without-border">Przekaż dary</a></li>
+            <!-- Якорная ссылка на секцию "contact" -->
             <li><a href="{% url 'donations:index' %}#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
     </nav>
