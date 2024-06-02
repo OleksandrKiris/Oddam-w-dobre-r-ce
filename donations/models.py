@@ -1,3 +1,4 @@
+# donations/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, RegexValidator
@@ -74,7 +75,7 @@ class Donation(models.Model):
     pick_up_time = models.TimeField(verbose_name="Czas odbioru")
     # Komentarz do odbioru daru
     pick_up_comment = models.TextField(blank=True, null=True, verbose_name="Komentarz do odbioru")
-    # Użytkownik związany z darem
+    # Użytkownik związany с darem
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Użytkownik")
 
     class Meta:
