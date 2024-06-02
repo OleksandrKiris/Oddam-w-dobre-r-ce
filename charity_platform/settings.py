@@ -42,7 +42,7 @@ ROOT_URLCONF = 'charity_platform.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates'],  # Global templates directory (if needed)
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -89,7 +89,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internacjonalizacja#
+# Internacjonalizacja
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
@@ -103,7 +103,8 @@ USE_TZ = True
 # Pliki statyczne (CSS, JavaScript, Obrazy)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Domyślny typ klucza podstawowego
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
