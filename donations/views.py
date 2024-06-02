@@ -52,6 +52,8 @@ def login(request):
             auth_login(request, user)
             return redirect('donations:index')
         else:
+            if not User.objects.filter(username=email).exists():
+                return redirect('donations:register')
             errors = {'email': 'Nieprawidłowy email lub hasło'}
             return render(request, 'login.html', {'errors': errors})
     return render(request, 'login.html')
