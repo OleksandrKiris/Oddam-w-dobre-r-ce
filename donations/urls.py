@@ -8,5 +8,6 @@ urlpatterns = [
     path('add_donation/', views.add_donation, name='add_donation'),
     path('login/', views.login, name='login'),
     path('register/', views.register, name='register'),
-    path('form-confirmation/', views.form_confirmation, name='form_confirmation'),
+    path('logout/', views.logout, name='logout'),
+    path('form_confirmation/', views.form_confirmation, name='form_confirmation'),
 ]
