@@ -1930,3 +1930,19 @@ footer .bottom-line--icons a img {
   border-bottom: 2px solid #333; /* Пример нижней границы для активной вкладки */
   color: #333; /* Пример цвета текста для активной вкладки */
 }
+
+/* static/css/style.css */
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.error-message ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.error-message li {
+    margin-bottom: 5px;
+}
