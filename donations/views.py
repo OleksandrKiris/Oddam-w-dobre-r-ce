@@ -1,13 +1,11 @@
 from django.shortcuts import render
-
-from donations.models import Donation, Institution
 from django.db.models import Sum
+from .models import Donation, Institution
 
 
 def index(request):
-    total_bags = Donation.objects.aggregate(total=Sum('quantity'))['total'] or 0
-    supported_institutions = Institution.objects.filter(donation__isnull=False).distinct().count()
-
+    total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
+    supported_institutions = Institution.objects.count()
     context = {
         'total_bags': total_bags,
         'supported_institutions': supported_institutions,
