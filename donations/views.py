@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from .models import Donation, Institution
+from django.contrib.auth import logout as auth_logout
 
 
 def index(request):
@@ -94,3 +95,8 @@ def register(request):
 
 def form_confirmation(request):
     return render(request, 'form-confirmation.html')
+
+
+def logout(request):
+    auth_logout(request)
+    return redirect('donations:index')

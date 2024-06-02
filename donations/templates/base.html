@@ -13,23 +13,26 @@
 <header class="header--main-page">
     <nav class="container container--70">
         <ul class="nav--actions">
-            <!-- Ссылка на страницу логина -->
-            <li><a href="{% url 'donations:login' %}" class="btn btn--small btn--without-border">Zaloguj</a></li>
-            <!-- Ссылка на страницу регистрации -->
-            <li><a href="{% url 'donations:register' %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>
+            {% if user.is_authenticated %}
+                <li class="dropdown">
+                    <a href="#" class="btn btn--small btn--without-border">Witaj {{ user.first_name }}</a>
+                    <div class="dropdown-content">
+                        <a href="#">Profil</a>
+                        <a href="#">Ustawienia</a>
+                        <a href="{% url 'donations:logout' %}" class="btn btn--small btn--highlighted">Wyloguj</a>
+                    </div>
+                </li>
+            {% else %}
+                <li><a href="{% url 'donations:login' %}" class="btn btn--small btn--without-border">Zaloguj</a></li>
+                <li><a href="{% url 'donations:register' %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>
+            {% endif %}
         </ul>
         <ul>
-            <!-- Якорная ссылка на главную страницу -->
             <li><a href="{% url 'donations:index' %}#start" class="btn btn--without-border">Start</a></li>
-            <!-- Якорная ссылка на секцию "steps" -->
             <li><a href="{% url 'donations:index' %}#steps" class="btn btn--without-border">O co chodzi?</a></li>
-            <!-- Якорная ссылка на секцию "about-us" -->
             <li><a href="{% url 'donations:index' %}#about-us" class="btn btn--without-border">O nas</a></li>
-            <!-- Якорная ссылка на секцию "help" -->
             <li><a href="{% url 'donations:index' %}#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
-            <!-- Ссылка на страницу добавления пожертвования -->
             <li><a href="{% url 'donations:add_donation' %}" class="btn btn--without-border">Przekaż dary</a></li>
-            <!-- Якорная ссылка на секцию "contact" -->
             <li><a href="{% url 'donations:index' %}#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
     </nav>

@@ -7,13 +7,12 @@ document.addEventListener("DOMContentLoaded", function() {
       this.$el = $el;
       this.$buttonsContainer = $el.querySelector(".help--buttons");
       this.$slidesContainers = $el.querySelectorAll(".help--slides");
-      this.currentSlide = sessionStorage.getItem('activeTab') || this.$buttonsContainer.querySelector(".active").parentElement.dataset.id;
+      this.currentSlide = this.$buttonsContainer.querySelector(".active").parentElement.dataset.id;
       this.init();
     }
 
     init() {
       this.events();
-      this.showTab(this.currentSlide);
     }
 
     events() {
@@ -30,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
        * Pagination buttons
        */
       this.$el.addEventListener("click", e => {
-        if (e.target.classList.contains("btn") && e.target.parentElement.parentElement.classList.contains("pagination")) {
+        if (e.target.classList.contains("btn") && e.target.parentElement.parentElement.classList.contains("help--slides-pagination")) {
           this.changePage(e);
         }
       });
@@ -41,40 +40,32 @@ document.addEventListener("DOMContentLoaded", function() {
       const $btn = e.target;
 
       // Buttons Active class change
-      [...this.$buttonsContainer.querySelectorAll('a')].forEach(btn => btn.classList.remove("active"));
+      [...this.$buttonsContainer.children].forEach(btn => btn.firstElementChild.classList.remove("active"));
       $btn.classList.add("active");
 
       // Current slide
       this.currentSlide = $btn.parentElement.dataset.id;
-      sessionStorage.setItem('activeTab', this.currentSlide);
 
       // Slides active class change
-      this.showTab(this.currentSlide);
-    }
-
-    showTab(target) {
-      console.log('Showing tab:', target);
       this.$slidesContainers.forEach(el => {
         el.classList.remove("active");
-        if (el.dataset.id === target) {
+
+        if (el.dataset.id === this.currentSlide) {
           el.classList.add("active");
         }
       });
-      [...this.$buttonsContainer.querySelectorAll('a')].forEach(btn => {
-        btn.classList.remove("active");
-        if (btn.dataset.target === target) {
-          btn.classList.add("active");
-        }
-      });
     }
 
+    /**
+     * TODO: callback to page change event
+     */
     changePage(e) {
-      const target = e.target.dataset.target;
-      sessionStorage.setItem('activeTab', target);
-      console.log('Changing page to target:', target);
+      e.preventDefault();
+      const page = e.target.dataset.page;
+
+      console.log(page);
     }
   }
-
   const helpSection = document.querySelector(".help");
   if (helpSection !== null) {
     new Help(helpSection);
@@ -145,7 +136,6 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
   }
-
   document.querySelectorAll(".form-group--dropdown select").forEach(el => {
     new FormSelect(el);
   });
@@ -236,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function() {
       this.slides.forEach(slide => {
         slide.classList.remove("active");
 
-        if (slide.dataset.step === this.currentStep) {
+        if (slide.dataset.step == this.currentStep) {
           slide.classList.add("active");
         }
       });
@@ -258,9 +248,68 @@ document.addEventListener("DOMContentLoaded", function() {
       this.updateForm();
     }
   }
-
   const form = document.querySelector(".form--steps");
   if (form !== null) {
     new FormSteps(form);
   }
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const tabButtons = document.querySelectorAll('.help--buttons a');
+  const tabs = document.querySelectorAll('.help--slides');
+  let activeTab = sessionStorage.getItem('activeTab') || 'foundations';
+
+  function showTab(target) {
+    tabs.forEach(tab => {
+      if (tab.dataset.id === target) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+    tabButtons.forEach(btn => {
+      if (btn.dataset.target === target) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  showTab(activeTab);
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const target = event.target.dataset.target;
+      sessionStorage.setItem('activeTab', target);
+      showTab(target);
+      activeTab = target; // обновление активной вкладки
+    });
+  });
+
+  const paginationLinks = document.querySelectorAll('.pagination a');
+  paginationLinks.forEach(link => {
+    link.addEventListener('click', (event) => {
+      const url = new URL(event.target.href);
+      url.searchParams.set('activeTab', activeTab);
+      event.target.href = url.toString();
+    });
+  });
+});
+
+
+// static/js/app.js
+document.addEventListener("DOMContentLoaded", function() {
+    // Show dropdown menu on hover
+    const dropdown = document.querySelector('.dropdown');
+    if (dropdown) {
+        dropdown.addEventListener('mouseenter', () => {
+            dropdown.querySelector('.dropdown-content').style.display = 'block';
+        });
+        dropdown.addEventListener('mouseleave', () => {
+            dropdown.querySelector('.dropdown-content').style.display = 'none';
+        });
+    }
 });
