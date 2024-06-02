@@ -1,0 +1,77 @@
+# Виртуальное окружение
+venv/
+ENV/
+env/
+.venv/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Лог-файлы
+*.log
+
+# Базы данных
+*.db
+*.sqlite3
+
+# Конфигурация среды разработки
+.vscode/
+.idea/
+*.swp
+
+# Статические файлы
+staticfiles/
+static/
+media/
+
+# Сборки и отладка
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# PyInstaller
+# Обычно создается только одна из этих папок, но включим их все на всякий случай.
+*.spec
+
+# Django stuff
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+
+# Пакеты
+*.egg
+*.egg-info
+dist
+.eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Тестовые файлы
+.tox/
+.pytest_cache/
+.coverage
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Pyre
+.pyre/
+
+# MyPy
+.mypy_cache/
+
+# Docker
+*.env
+Dockerfile
+docker-compose.yml
+__MACOSX
