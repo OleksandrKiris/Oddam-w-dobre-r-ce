@@ -1,4 +1,3 @@
-<!-- donations/templates/register.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -14,38 +13,40 @@
         <label>
             <input type="text" name="name" placeholder="Imię" required>
         </label>
-        <span class="error-message" id="nameError"></span>
+        <span class="error-message">{{ errors.name }}</span>
       </div>
       <div class="form-group">
         <label>
             <input type="text" name="surname" placeholder="Nazwisko" required>
         </label>
-        <span class="error-message" id="surnameError"></span>
+        <span class="error-message">{{ errors.surname }}</span>
       </div>
       <div class="form-group">
         <label>
             <input type="email" name="email" placeholder="Email" required>
         </label>
-        <span class="error-message" id="registerEmailError"></span>
+        <span class="error-message">{{ errors.email }}</span>
       </div>
       <div class="form-group">
         <label>
             <input type="password" name="password" placeholder="Hasło" required>
         </label>
-        <span class="error-message" id="registerPasswordError"></span>
+        <span class="error-message">{{ errors.password }}</span>
       </div>
       <div class="form-group">
         <label>
             <input type="password" name="password2" placeholder="Powtórz hasło" required>
         </label>
-        <span class="error-message" id="password2Error"></span>
+        <span class="error-message">{{ errors.password2 }}</span>
       </div>
       <div class="form-group form-group--buttons">
         <a href="{% url 'donations:login' %}" class="btn btn--without-border">Zaloguj się</a>
         <button class="btn" type="submit">Załóż konto</button>
       </div>
     </form>
-    <div id="registerSuccessMessage" style="display: none;">Registration successful!</div>
+    {% if success %}
+    <div id="registerSuccessMessage">Registration successful!</div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
