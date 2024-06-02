@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Sum
-from django.contrib.auth.models import User
 from .models import Donation, Institution
 
 
@@ -47,24 +47,35 @@ def login(request):
 
 def register(request):
     if request.method == 'POST':
-        name = request.POST['name']
-        surname = request.POST['surname']
-        email = request.POST['email']
-        password = request.POST['password']
-        password2 = request.POST['password2']
+        name = request.POST.get('name')
+        surname = request.POST.get('surname')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
 
-        if password == password2:
-            if User.objects.filter(username=email).exists():
-                return render(request, 'register.html', {'error': 'Email już istnieje'})
-            else:
-                user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
-                                                email=email)
-                user.save()
-                return redirect('donations:login')
+        errors = {}
+        if not name:
+            errors['name'] = 'Imię jest wymagane'
+        if not surname:
+            errors['surname'] = 'Nazwisko jest wymagane'
+        if not email:
+            errors['email'] = 'Email jest wymagany'
+        if not password:
+            errors['password'] = 'Hasło jest wymagane'
+        if password != password2:
+            errors['password2'] = 'Hasła nie są zgodne'
+        if User.objects.filter(username=email).exists():
+            errors['email'] = 'Email już istnieje'
+
+        if errors:
+            return render(request, 'register.html', {'errors': errors})
         else:
-            return render(request, 'register.html', {'error': 'Hasła nie są zgodne'})
-    else:
-        return render(request, 'register.html')
+            user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
+                                            email=email)
+            user.save()
+            return redirect('donations:login')
+
+    return render(request, 'register.html')
 
 
 def form_confirmation(request):
