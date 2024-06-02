@@ -8,7 +8,8 @@
 <div class="custom-header">
   <div class="custom-form-container">
     <h2>Załóż konto</h2>
-    <form id="registerForm">
+    <form id="registerForm" method="POST" action="{% url 'donations:register' %}">
+      {% csrf_token %}
       <div class="form-group">
         <label>
             <input type="text" name="name" placeholder="Imię" required>

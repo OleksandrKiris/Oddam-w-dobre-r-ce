@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from django.db.models import Sum
+from django.contrib.auth.models import User
 from .models import Donation, Institution
 
 
@@ -8,7 +9,7 @@ def index(request):
     total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
     supported_institutions = Institution.objects.count()
 
-    # Paginacja dla każdej sekcji
+    # Пагинация для каждой секции
     foundations = Institution.objects.filter(type=Institution.FOUNDATION)
     ngos = Institution.objects.filter(type=Institution.NGO)
     local_collections = Institution.objects.filter(type=Institution.LOCAL_COLLECTION)
@@ -35,6 +36,7 @@ def index(request):
 
     return render(request, 'index.html', context)
 
+
 def add_donation(request):
     return render(request, 'form.html')
 
@@ -44,7 +46,25 @@ def login(request):
 
 
 def register(request):
-    return render(request, 'register.html')
+    if request.method == 'POST':
+        name = request.POST['name']
+        surname = request.POST['surname']
+        email = request.POST['email']
+        password = request.POST['password']
+        password2 = request.POST['password2']
+
+        if password == password2:
+            if User.objects.filter(username=email).exists():
+                return render(request, 'register.html', {'error': 'Email już istnieje'})
+            else:
+                user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
+                                                email=email)
+                user.save()
+                return redirect('donations:login')
+        else:
+            return render(request, 'register.html', {'error': 'Hasła nie są zgodne'})
+    else:
+        return render(request, 'register.html')
 
 
 def form_confirmation(request):
