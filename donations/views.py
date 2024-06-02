@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Sum
@@ -42,6 +43,17 @@ def add_donation(request):
 
 
 def login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            auth_login(request, user)
+            return redirect('donations:index')
+        else:
+            errors = {'email': 'Nieprawidłowy email lub hasło'}
+            return render(request, 'login.html', {'errors': errors})
     return render(request, 'login.html')
 
 
