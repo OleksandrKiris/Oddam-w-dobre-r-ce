@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Sum
-from .models import Donation, Institution
+from .models import Donation, Institution, Category
 from django.contrib.auth import logout as auth_logout
 
 
@@ -40,7 +40,11 @@ def index(request):
 
 
 def add_donation(request):
-    return render(request, 'form.html')
+    if not request.user.is_authenticated:
+        return redirect('donations:login')
+
+    categories = Category.objects.all()
+    return render(request, 'form.html', {'categories': categories})
 
 
 def login(request):
