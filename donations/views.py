@@ -96,10 +96,8 @@ def login(request):
         user = authenticate(request, username=email, password=password)
         if user is not None:
             auth_login(request, user)
-            return redirect('donations:index')
+            return redirect('/admin/' if user.is_superuser else 'donations:index')
         else:
-            if not User.objects.filter(username=email).exists():
-                return redirect('donations:register')
             errors = {'email': 'Nieprawidłowy email lub hasło'}
             return render(request, 'login.html', {'errors': errors})
     return render(request, 'login.html')

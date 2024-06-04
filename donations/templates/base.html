@@ -19,6 +19,9 @@
                     <div class="dropdown-content">
                         <a href="#">Profil</a>
                         <a href="#">Ustawienia</a>
+                        {% if user.is_superuser %}
+                            <a href="/admin/" class="btn btn--small btn--without-border">Admin Panel</a>
+                        {% endif %}
                         <a href="{% url 'donations:logout' %}" class="btn btn--small btn--highlighted">Wyloguj</a>
                     </div>
                 </li>
