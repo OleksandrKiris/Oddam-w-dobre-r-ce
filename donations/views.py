@@ -1,3 +1,5 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
@@ -39,12 +41,51 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+@login_required
 def add_donation(request):
-    if not request.user.is_authenticated:
-        return redirect('donations:login')
+    if request.method == 'POST':
+        categories = request.POST.getlist('categories')
+        quantity = request.POST.get('bags')
+        institution_id = request.POST.get('organization')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        postcode = request.POST.get('postcode')
+        phone = request.POST.get('phone')
+        pick_up_date = request.POST.get('date')
+        pick_up_time = request.POST.get('time')
+        more_info = request.POST.get('more_info', '')
+
+        try:
+            institution = Institution.objects.get(id=institution_id)
+        except Institution.DoesNotExist:
+            messages.error(request, "Wybrana instytucja nie istnieje.")
+            return redirect('donations:form')
+
+        donation = Donation(
+            quantity=quantity,
+            institution=institution,
+            address=address,
+            phone_number=phone,
+            city=city,
+            zip_code=postcode,
+            pick_up_date=pick_up_date,
+            pick_up_time=pick_up_time,
+            pick_up_comment=more_info,
+            user=request.user
+        )
+        donation.save()
+        donation.categories.set(categories)
+
+        return redirect('donations:form_confirmation')
 
     categories = Category.objects.all()
-    return render(request, 'form.html', {'categories': categories})
+    institutions = Institution.objects.prefetch_related('categories').all()
+    return render(request, 'form.html', {'categories': categories, 'institutions': institutions})
+
+
+@login_required
+def form_confirmation(request):
+    return render(request, 'form-confirmation.html')
 
 
 def login(request):
@@ -95,10 +136,6 @@ def register(request):
             return redirect('donations:login')
 
     return render(request, 'register.html')
-
-
-def form_confirmation(request):
-    return render(request, 'form-confirmation.html')
 
 
 def logout(request):
