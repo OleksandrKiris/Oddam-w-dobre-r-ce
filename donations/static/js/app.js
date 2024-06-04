@@ -212,12 +212,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
       // Form submit
       this.$form.querySelector("form").addEventListener("submit", e => this.submit(e));
+
+      // Filter institutions by selected categories
+      document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          this.filterInstitutions();
+        });
+      });
     }
 
-    /**
-     * Update form front-end
-     * Show next or previous section etc.
-     */
     updateForm() {
       this.$step.innerText = this.currentStep;
 
@@ -226,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function() {
       this.slides.forEach(slide => {
         slide.classList.remove("active");
 
-        if (slide.dataset.step == this.currentStep) {
+        if (slide.dataset.step === this.currentStep) {
           slide.classList.add("active");
         }
       });
@@ -235,17 +238,55 @@ document.addEventListener("DOMContentLoaded", function() {
       this.$step.parentElement.hidden = this.currentStep >= 6;
 
       // TODO: get data from inputs and show them in summary
+      if (this.currentStep === 5) {
+        this.showSummary();
+      }
     }
 
-    /**
-     * Submit form
-     *
-     * TODO: validation, send data to server
-     */
+    filterInstitutions() {
+      const selectedCategories = [...document.querySelectorAll('.category-checkbox:checked')].map(cb => parseInt(cb.value));
+      console.log("Selected categories:", selectedCategories); // Debugging line
+      document.querySelectorAll('.institution').forEach(inst => {
+        const instCategories = inst.dataset.categories ? inst.dataset.categories.split(',').map(Number) : [];
+        console.log("Institution categories:", instCategories); // Debugging line
+        const match = selectedCategories.every(cat => instCategories.includes(cat));
+        inst.style.display = match ? 'block' : 'none';
+        console.log(`Institution ${inst.dataset.categories} ${match ? "matches" : "does not match"}`); // Debugging line
+      });
+    }
+
+    showSummary() {
+      [...document.querySelectorAll('.category-checkbox:checked')].map(cb => cb.nextElementSibling.innerText).join(', ');
+      const selectedInstitutionElement = document.querySelector('input[name="organization"]:checked');
+      const selectedInstitution = selectedInstitutionElement ? selectedInstitutionElement.nextElementSibling.querySelector('.title').innerText : '';
+
+      const summaryItems = [
+        { selector: '.summary .icon-bag + .summary--text', text: `${document.querySelector('input[name="bags"]').value} worki ubrań` },
+        { selector: '.summary .icon-hand + .summary--text', text: `Dla fundacji ${selectedInstitution}` },
+        { selector: '.summary .address', text: document.querySelector('input[name="address"]').value },
+        { selector: '.summary .city', text: document.querySelector('input[name="city"]').value },
+        { selector: '.summary .postcode', text: document.querySelector('input[name="postcode"]').value },
+        { selector: '.summary .phone', text: document.querySelector('input[name="phone"]').value },
+        { selector: '.summary .date', text: document.querySelector('input[name="date"]').value },
+        { selector: '.summary .time', text: document.querySelector('input[name="time"]').value },
+        { selector: '.summary .more_info', text: document.querySelector('textarea[name="more_info"]').value || 'Brak uwag' }
+      ];
+
+      summaryItems.forEach(item => {
+        const element = document.querySelector(item.selector);
+        if (element) {
+          element.innerText = item.text;
+        }
+      });
+    }
+
     submit(e) {
       e.preventDefault();
       this.currentStep++;
       this.updateForm();
+      if (this.currentStep > 5) {
+        this.$form.querySelector('form').submit();
+      }
     }
   }
   const form = document.querySelector(".form--steps");

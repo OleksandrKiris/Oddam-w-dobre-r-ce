@@ -4,7 +4,7 @@
 {% block title %}Form{% endblock %}
 
 {% block header %}
-  <div class="slogan container container--90">
+<div class="slogan container container--90">
     <div class="slogan--item">
       <h1>
         Oddaj rzeczy, których już nie chcesz<br>
@@ -56,13 +56,13 @@
 
     <form action="{% url 'donations:form_confirmation' %}" method="post">
       {% csrf_token %}
-      <!-- STEP 1: class .active is switching steps -->
-      <div data-step="1" class="active">
+      <!-- STEP 1 -->
+      <div data-step="1" class="form-step active">
         <h3>Zaznacz co chcesz oddać:</h3>
         {% for category in categories %}
         <div class="form-group form-group--checkbox">
           <label>
-            <input type="checkbox" name="categories" value="{{ category.id }}">
+            <input type="checkbox" class="category-checkbox" name="categories" value="{{ category.id }}">
             <span class="checkbox"></span>
             <span class="description">{{ category.name }}</span>
           </label>
@@ -74,12 +74,12 @@
       </div>
 
       <!-- STEP 2 -->
-      <div data-step="2">
+      <div data-step="2" class="form-step">
         <h3>Podaj liczbę 60l worków, w które spakowałeś/aś rzeczy:</h3>
         <div class="form-group form-group--inline">
           <label>
             Liczba 60l worków:
-            <input type="number" name="bags" step="1" min="1">
+            <input type="number" name="bags" step="1" min="1" required>
           </label>
         </div>
         <div class="form-group form-group--buttons">
@@ -89,32 +89,20 @@
       </div>
 
       <!-- STEP 3 -->
-      <div data-step="3">
+      <div data-step="3" class="form-step">
         <h3>Wybierz organizacje, której chcesz pomóc:</h3>
-        <div class="form-group form-group--checkbox">
+        {% for institution in institutions %}
+        <div class="form-group form-group--checkbox institution" data-categories="{% for category in institution.categories.all %}{{ category.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
           <label>
-            <input type="radio" name="organization" value="old">
+            <input type="radio" name="organization" value="{{ institution.id }}" required>
             <span class="checkbox radio"></span>
             <span class="description">
-              <div class="title">Fundacja “Bez domu”</div>
-              <div class="subtitle">
-                Cel i misja: Pomoc dla osób nie posiadających miejsca zamieszkania
-              </div>
+              <div class="title">{{ institution.name }}</div>
+              <div class="subtitle">{{ institution.description }}</div>
             </span>
           </label>
         </div>
-        <div class="form-group form-group--checkbox">
-          <label>
-            <input type="radio" name="organization" value="old">
-            <span class="checkbox radio"></span>
-            <span class="description">
-              <div class="title">Fundacja “Dla dzieci"</div>
-              <div class="subtitle">
-                Cel i misja: Pomoc osobom znajdującym się w trudnej sytuacji życiowej.
-              </div>
-            </span>
-          </label>
-        </div>
+        {% endfor %}
         <div class="form-group form-group--buttons">
           <button type="button" class="btn prev-step">Wstecz</button>
           <button type="button" class="btn next-step">Dalej</button>
@@ -122,31 +110,31 @@
       </div>
 
       <!-- STEP 4 -->
-      <div data-step="4">
+      <div data-step="4" class="form-step">
         <h3>Podaj adres oraz termin odbioru rzecz przez kuriera:</h3>
         <div class="form-section form-section--columns">
           <div class="form-section--column">
             <h4>Adres odbioru</h4>
             <div class="form-group form-group--inline">
-              <label> Ulica <input type="text" name="address"> </label>
+              <label> Ulica <input type="text" name="address" required> </label>
             </div>
             <div class="form-group form-group--inline">
-              <label> Miasto <input type="text" name="city"> </label>
+              <label> Miasto <input type="text" name="city" required> </label>
             </div>
             <div class="form-group form-group--inline">
-              <label> Kod pocztowy <input type="text" name="postcode"> </label>
+              <label> Kod pocztowy <input type="text" name="postcode" required> </label>
             </div>
             <div class="form-group form-group--inline">
-              <label> Numer telefonu <input type="phone" name="phone"> </label>
+              <label> Numer telefonu <input type="text" name="phone" required> </label>
             </div>
           </div>
           <div class="form-section--column">
             <h4>Termin odbioru</h4>
             <div class="form-group form-group--inline">
-              <label> Data <input type="date" name="data"> </label>
+              <label> Data <input type="date" name="date" required> </label>
             </div>
             <div class="form-group form-group--inline">
-              <label> Godzina <input type="time" name="time"> </label>
+              <label> Godzina <input type="time" name="time" required> </label>
             </div>
             <div class="form-group form-group--inline">
               <label> Uwagi dla kuriera
@@ -162,7 +150,7 @@
       </div>
 
       <!-- STEP 5 -->
-      <div data-step="5">
+      <div data-step="5" class="form-step">
         <h3>Podsumowanie Twojej darowizny</h3>
         <div class="summary">
           <div class="form-section">
@@ -170,11 +158,11 @@
             <ul>
               <li>
                 <span class="icon icon-bag"></span>
-                <span class="summary--text">4 worki ubrań w dobrym stanie dla dzieci</span>
+                <span class="summary--text">worki ubrań w dobrym stanie</span>
               </li>
               <li>
                 <span class="icon icon-hand"></span>
-                <span class="summary--text">Dla fundacji "Mam marzenie" w Warszawie</span>
+                <span class="summary--text">Dla fundacji</span>
               </li>
             </ul>
           </div>
@@ -182,18 +170,18 @@
             <div class="form-section--column">
               <h4>Adres odbioru:</h4>
               <ul>
-                <li>Prosta 51</li>
-                <li>Warszawa</li>
-                <li>99-098</li>
-                <li>123 456 789</li>
+                <li class="address"></li>
+                <li class="city"></li>
+                <li class="postcode"></li>
+                <li class="phone"></li>
               </ul>
             </div>
             <div class="form-section--column">
               <h4>Termin odbioru:</h4>
               <ul>
-                <li>13/12/2018</li>
-                <li>15:40</li>
-                <li>Brak uwag</li>
+                <li class="date"></li>
+                <li class="time"></li>
+                <li class="more_info">Brak uwag</li>
               </ul>
             </div>
           </div>
