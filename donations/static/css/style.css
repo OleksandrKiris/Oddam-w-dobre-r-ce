@@ -2017,3 +2017,63 @@ footer .bottom-line--icons a img {
     display: inline-block;
     width: 150px; /* Ширина для выравнивания */
 }
+
+/* donations/static/css/content.css */
+/* donations/static/css/content.css */
+/* Стили для контента */
+.content-container {
+    display: flex;
+    justify-content: flex-start; /* Выравнивание по левой стороне */
+    margin-top: 20px;
+    padding-left: 20px; /* Возможность регулировки отступа */
+    background: url('../images/form-bg.jpg') no-repeat center center; /* Подключение фона */
+    background-size: cover; /* Покрытие всего блока */
+    height: 100vh; /* Высота блока */
+    padding: 20px; /* Отступы внутри блока */
+}
+
+.content-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 80%; /* Ширина карточки */
+    max-width: 1200px; /* Увеличенная максимальная ширина карточки */
+    font-size: 18px; /* Увеличенный шрифт */
+    margin-left: 0; /* Расположение карточки по левой стороне */
+}
+
+
+
+.content-card h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px; /* Увеличенный шрифт */
+    color: #333;
+}
+
+.donations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px; /* Увеличенный шрифт */
+}
+
+.donations-table th,
+.donations-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.donations-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.donations-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.donations-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
