@@ -9,7 +9,14 @@ from django.db.models import Sum
 from .models import Donation, Institution, Category
 from django.contrib.auth import logout as auth_logout
 import json
-
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import authenticate
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+import json
+from .models import Donation
 def index(request):
     total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
     supported_institutions = Institution.objects.count()
@@ -156,7 +163,7 @@ def user_profile(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
     donations_list = Donation.objects.filter(user=request.user).order_by('is_taken', 'pick_up_date', 'pick_up_time')
-    paginator = Paginator(donations_list, 6)  # Пагинация: 6 пожертвований на страницу
+    paginator = Paginator(donations_list, 8)  # Пагинация: 6 пожертвований на страницу
 
     page_number = request.GET.get('page')
     donations = paginator.get_page(page_number)
@@ -172,3 +179,38 @@ def user_profile(request):
         'last_login': request.user.last_login,
         'donations': donations,
     })
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        user = request.user
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        if user.check_password(password):
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.save()
+            return redirect('donations:user_profile')
+        else:
+            return render(request, 'edit_profile.html', {'error': 'Incorrect password'})
+
+    return render(request, 'edit_profile.html')
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            return redirect('donations:user_profile')
+        else:
+            return render(request, 'change_password.html', {'form': form})
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})
