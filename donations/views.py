@@ -139,3 +139,14 @@ def register(request):
 def logout(request):
     auth_logout(request)
     return redirect('donations:index')
+
+
+@login_required
+def user_profile(request):
+    return render(request, 'user_profile.html', {
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'email': request.user.email,
+        'date_joined': request.user.date_joined,
+        'last_login': request.user.last_login,
+    })

@@ -1972,3 +1972,48 @@ footer .bottom-line--icons a img {
 .dropdown:hover .dropdown-content {
     display: block;
 }
+
+/* donations/static/css/style.css */
+/* Стили для профиля пользователя */
+.profile-container {
+    display: flex;
+    justify-content: flex-end; /* Выравнивание по правой стороне */
+    align-items: flex-start;
+    margin-top: 200px;
+    padding-right: 40px; /* Возможность регулировки отступа */
+}
+
+.profile-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 500px;
+    text-align: center; /* Центрирование текста */
+    margin-right: 200px; /* Отступ от навигации */
+}
+
+.profile-card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 32px; /* Увеличенный шрифт */
+    color: #333;
+}
+
+.profile-details {
+    list-style-type: none;
+    padding: 0;
+    font-size: 18px; /* Увеличенный шрифт */
+    color: #555;
+}
+
+.profile-details li {
+    margin: 15px 0; /* Увеличенный отступ между элементами */
+}
+
+.profile-details li strong {
+    font-weight: bold;
+    margin-right: 10px;
+    display: inline-block;
+    width: 150px; /* Ширина для выравнивания */
+}
