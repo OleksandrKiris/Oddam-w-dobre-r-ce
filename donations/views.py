@@ -143,10 +143,13 @@ def logout(request):
 
 @login_required
 def user_profile(request):
+    donations = Donation.objects.filter(user=request.user)
     return render(request, 'user_profile.html', {
         'first_name': request.user.first_name,
         'last_name': request.user.last_name,
         'email': request.user.email,
         'date_joined': request.user.date_joined,
         'last_login': request.user.last_login,
+        'donations': donations,
     })
+
