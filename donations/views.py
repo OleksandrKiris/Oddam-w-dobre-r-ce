@@ -155,7 +155,15 @@ def user_profile(request):
         except (Donation.DoesNotExist, KeyError, ValueError):
             return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
-    donations = Donation.objects.filter(user=request.user).order_by('is_taken', 'pick_up_date', 'pick_up_time')
+    donations_list = Donation.objects.filter(user=request.user).order_by('is_taken', 'pick_up_date', 'pick_up_time')
+    paginator = Paginator(donations_list, 6)  # Пагинация: 6 пожертвований на страницу
+
+    page_number = request.GET.get('page')
+    donations = paginator.get_page(page_number)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'user_profile.html', {'donations': donations})
+
     return render(request, 'user_profile.html', {
         'first_name': request.user.first_name,
         'last_name': request.user.last_name,
@@ -164,5 +172,3 @@ def user_profile(request):
         'last_login': request.user.last_login,
         'donations': donations,
     })
-
-

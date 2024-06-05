@@ -23,40 +23,59 @@
 <div class="content-container">
     <div class="content-card">
         <h3>Lista przekazanych darów</h3>
-        <table class="donations-table">
-            <thead>
-                <tr>
-                    <th>Ilość worków</th>
-                    <th>Organizacja</th>
-                    <th>Kategorie</th>
-                    <th>Data odbioru</th>
-                    <th>Archiwizacja</th>
-                </tr>
-            </thead>
-            <tbody id="donations-list">
-                {% for donation in donations %}
-                <tr class="donation-row {% if donation.is_taken %}archived{% endif %}" data-donation-id="{{ donation.id }}">
-                    <td>{{ donation.quantity }}</td>
-                    <td>{{ donation.institution.name }}</td>
-                    <td>
-                        {% for category in donation.categories.all %}
-                            {{ category.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </td>
-                    <td>{{ donation.pick_up_date|date:"d M Y" }} {{ donation.pick_up_time|time:"H:i" }}</td>
-                    <td>
-                        <button type="button" class="btn-archive" onclick="toggleArchive({{ donation.id }})">
-                            {% if donation.is_taken %}Oznacz jako niezabrane{% else %}Oznacz jako zabrane{% endif %}
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">Brak przekazanych darów</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div id="donations-table-container">
+            <table class="donations-table">
+                <thead>
+                    <tr>
+                        <th>Ilość worków</th>
+                        <th>Organizacja</th>
+                        <th>Kategorie</th>
+                        <th>Data odbioru</th>
+                        <th>Archiwizacja</th>
+                    </tr>
+                </thead>
+                <tbody id="donations-list">
+                    {% for donation in donations %}
+                    <tr class="donation-row {% if donation.is_taken %}archived{% endif %}" data-donation-id="{{ donation.id }}">
+                        <td>{{ donation.quantity }}</td>
+                        <td>{{ donation.institution.name }}</td>
+                        <td>
+                            {% for category in donation.categories.all %}
+                                {{ category.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ donation.pick_up_date|date:"d M Y" }} {{ donation.pick_up_time|time:"H:i" }}</td>
+                        <td>
+                            <button type="button" class="btn-archive" onclick="toggleArchive({{ donation.id }})">
+                                {% if donation.is_taken %}Oznacz jako niezabrane{% else %}Oznacz jako zabrane{% endif %}
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">Brak przekazanych darów</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                <span class="step-links">
+                    {% if donations.has_previous %}
+                        <a href="?page=1" class="pagination-link">&laquo; first</a>
+                        <a href="?page={{ donations.previous_page_number }}" class="pagination-link">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ donations.number }} of {{ donations.paginator.num_pages }}.
+                    </span>
+
+                    {% if donations.has_next %}
+                        <a href="?page={{ donations.next_page_number }}" class="pagination-link">next</a>
+                        <a href="?page={{ donations.paginator.num_pages }}" class="pagination-link">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -101,6 +120,37 @@ function toggleArchive(donationId) {
         }
     });
 }
+
+function setupPaginationLinks() {
+    document.querySelectorAll('.pagination-link').forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const url = event.target.href;
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTableContainer = doc.querySelector('#donations-table-container');
+                if (newTableContainer) {
+                    document.querySelector('#donations-table-container').innerHTML = newTableContainer.innerHTML;
+                    setupPaginationLinks();
+                    window.scrollTo({
+                        top: document.querySelector('#donations-table-container').offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupPaginationLinks();
+});
 </script>
 {% endblock %}
-
