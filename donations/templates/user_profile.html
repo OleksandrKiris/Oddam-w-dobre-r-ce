@@ -1,4 +1,3 @@
-<!-- donations/templates/user_profile.html -->
 {% extends 'base.html' %}
 
 {% block title %}Profil użytkownika{% endblock %}
@@ -31,11 +30,12 @@
                     <th>Organizacja</th>
                     <th>Kategorie</th>
                     <th>Data odbioru</th>
+                    <th>Archiwizacja</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="donations-list">
                 {% for donation in donations %}
-                <tr>
+                <tr class="donation-row {% if donation.is_taken %}archived{% endif %}" data-donation-id="{{ donation.id }}">
                     <td>{{ donation.quantity }}</td>
                     <td>{{ donation.institution.name }}</td>
                     <td>
@@ -44,14 +44,63 @@
                         {% endfor %}
                     </td>
                     <td>{{ donation.pick_up_date|date:"d M Y" }} {{ donation.pick_up_time|time:"H:i" }}</td>
+                    <td>
+                        <button type="button" class="btn-archive" onclick="toggleArchive({{ donation.id }})">
+                            {% if donation.is_taken %}Oznacz jako niezabrane{% else %}Oznacz jako zabrane{% endif %}
+                        </button>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4">Brak przekazanych darów</td>
+                    <td colspan="5">Brak przekazanych darów</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleArchive(donationId) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch("{% url 'donations:user_profile' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ donation_id: donationId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const row = document.querySelector(`.donation-row[data-donation-id='${donationId}']`);
+            row.classList.toggle('archived');
+            const button = row.querySelector('.btn-archive');
+            if (data.is_taken) {
+                button.textContent = 'Oznacz jako niezabrane';
+            } else {
+                button.textContent = 'Oznacz jako zabrane';
+            }
+        }
+    });
+}
+</script>
 {% endblock %}
+
