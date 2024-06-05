@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 import re
 
-
 class Category(models.Model):
     # Nazwa kategorii, unikalna wartość
     name = models.CharField(max_length=255, unique=True, verbose_name="Nazwa")
@@ -55,7 +54,7 @@ class Donation(models.Model):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)], verbose_name="Ilość worków")
     # Kategorie daru
     categories = models.ManyToManyField(Category, verbose_name="Kategorie")
-    # Instytucja związana z darem
+    # Instytucja związана с darem
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, verbose_name="Instytucja")
     # Adres odbioru daru
     address = models.CharField(max_length=255, verbose_name="Adres")
@@ -71,12 +70,14 @@ class Donation(models.Model):
     zip_code = models.CharField(max_length=10, verbose_name="Kod pocztowy")
     # Data odbioru daru
     pick_up_date = models.DateField(verbose_name="Data odbioru")
-    # Czas odbioru daru
-    pick_up_time = models.TimeField(verbose_name="Czas odbioru")
-    # Komentarz do odbioru daru
-    pick_up_comment = models.TextField(blank=True, null=True, verbose_name="Komentarz do odbioru")
+    # Czas odbiorу darу
+    pick_up_time = models.TimeField(verbose_name="Czas odbiorу")
+    # Komентарz до odbiorу дару
+    pick_up_comment = models.TextField(blank=True, null=True, verbose_name="Komentarz do odbiorу")
     # Użytkownik związany с darem
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Użytkownik")
+    # Поле для обозначения, что дар был забран
+    is_taken = models.BooleanField(default=False, verbose_name="Zabrany")
 
     class Meta:
         verbose_name = "Darowizna"
@@ -87,9 +88,9 @@ class Donation(models.Model):
         return f"Darowizna {self.quantity} worków od {self.user} do {self.institution}"
 
     def clean(self):
-        # Sprawdzenie czy data odbioru nie jest w przeszłości
+        # Sprawdzenie czy data odbiorу nie jest w przeszłości
         if self.pick_up_date < timezone.now().date():
-            raise ValidationError("Data odbioru nie może być w przeszłości.")
+            raise ValidationError("Data odbiorу nie może być w przeszłości.")
 
         # Sprawdzenie formatu numeru telefonu
         if self.phone_number and not re.match(r'^\+?1?\d{9,15}$', self.phone_number):

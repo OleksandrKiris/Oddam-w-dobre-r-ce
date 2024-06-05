@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
@@ -7,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Sum
 from .models import Donation, Institution, Category
 from django.contrib.auth import logout as auth_logout
-
+import json
 
 def index(request):
     total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
@@ -143,7 +144,18 @@ def logout(request):
 
 @login_required
 def user_profile(request):
-    donations = Donation.objects.filter(user=request.user)
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            donation_id = data.get('donation_id')
+            donation = Donation.objects.get(id=donation_id, user=request.user)
+            donation.is_taken = not donation.is_taken
+            donation.save()
+            return JsonResponse({'status': 'success', 'is_taken': donation.is_taken})
+        except (Donation.DoesNotExist, KeyError, ValueError):
+            return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+    donations = Donation.objects.filter(user=request.user).order_by('is_taken', 'pick_up_date', 'pick_up_time')
     return render(request, 'user_profile.html', {
         'first_name': request.user.first_name,
         'last_name': request.user.last_name,
@@ -152,4 +164,5 @@ def user_profile(request):
         'last_login': request.user.last_login,
         'donations': donations,
     })
+
 
