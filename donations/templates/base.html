@@ -17,7 +17,7 @@
                 <li class="dropdown">
                     <a href="#" class="btn btn--small btn--without-border">Witaj {{ user.first_name }}</a>
                     <div class="dropdown-content">
-                        <a href="#">Profil</a>
+                         <a href="{% url 'donations:user_profile' %}">Profil</a>
                         <a href="#">Ustawienia</a>
                         {% if user.is_superuser %}
                             <a href="/admin/" class="btn btn--small btn--without-border">Admin Panel</a>

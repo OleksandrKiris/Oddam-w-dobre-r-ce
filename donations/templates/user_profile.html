@@ -1,0 +1,19 @@
+<!-- donations/templates/user_profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Profil użytkownika{% endblock %}
+
+{% block header %}
+<div class="profile-container">
+    <div class="profile-card">
+        <h2>Profil użytkownika</h2>
+        <ul class="profile-details">
+            <li><strong>Imię:</strong> {{ first_name }}</li>
+            <li><strong>Nazwisko:</strong> {{ last_name }}</li>
+            <li><strong>Email:</strong> {{ email }}</li>
+            <li><strong>Data rejestracji:</strong> {{ date_joined|date:"d M Y H:i" }}</li>
+            <li><strong>Ostatnie logowanie:</strong> {{ last_login|date:"d M Y H:i" }}</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
