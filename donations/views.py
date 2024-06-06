@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.db.models import Sum
@@ -123,23 +125,26 @@ def register(request):
 
         errors = {}
         if not name:
-            errors['name'] = 'Imię jest wymagane'
+            errors['name'] = ['Imię jest wymagane']
         if not surname:
-            errors['surname'] = 'Nazwisko jest wymagane'
+            errors['surname'] = ['Nazwisko jest wymagane']
         if not email:
-            errors['email'] = 'Email jest wymagany'
+            errors['email'] = ['Email jest wymagany']
         if not password:
-            errors['password'] = 'Hasło jest wymagane'
+            errors['password'] = ['Hasło jest wymagane']
         if password != password2:
-            errors['password2'] = 'Hasła nie są zgodne'
+            errors['password2'] = ['Hasła nie są zgodne']
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            errors['password'] = list(e.messages)
         if User.objects.filter(username=email).exists():
-            errors['email'] = 'Email już istnieje'
+            errors['email'] = ['Email już istnieje']
 
         if errors:
             return render(request, 'register.html', {'errors': errors})
         else:
-            user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
-                                            email=email)
+            user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname, email=email)
             user.is_active = False
             user.save()
 
@@ -155,7 +160,12 @@ def register(request):
                 'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': token.token,
             })
-            plain_message = f"Cześć {user.first_name},\n\nDziękujemy za zarejestrowanie się na naszej stronie. Proszę kliknij poniższy link, aby aktywować swoje konto:\n\nhttp://{current_site.domain}{reverse('donations:activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token.token})}\n\nJeśli nie rejestrowałeś się na naszej stronie, zignoruj tę wiadomość."
+            plain_message = (
+                f"Cześć {user.first_name},\n\nDziękujemy za zarejestrowanie się na naszej stronie. "
+                f"Proszę kliknij poniższy link, aby aktywować swoje konto:\n\n"
+                f"http://{current_site.domain}{reverse('donations:activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token.token})}\n\n"
+                "Jeśli nie rejestrowałeś się na naszej stronie, zignoruj tę wiadomość."
+            )
 
             email = EmailMultiAlternatives(mail_subject, plain_message, settings.DEFAULT_FROM_EMAIL, [email])
             email.attach_alternative(message, "text/html")
@@ -283,24 +293,28 @@ def password_reset_request(request):
     return render(request, 'password_reset.html')
 
 
-def password_reset_confirm(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+def password_reset_confirm(request, uidb64=None, token=None):
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        if password1 != password2:
+            return render(request, 'password_reset_confirm.html', {'error': 'Hasła nie są zgodne'})
+        try:
+            validate_password(password1)
+        except ValidationError as e:
+            return render(request, 'password_reset_confirm.html', {'error': list(e.messages)})
 
-    if user is not None and PasswordResetToken.objects.filter(user=user, token=token).exists():
-        if request.method == "POST":
-            password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-            if password1 == password2:
-                user.set_password(password1)
-                user.save()
-                PasswordResetToken.objects.filter(user=user).delete()
-                return redirect('donations:login')
-            else:
-                return render(request, 'password_reset_confirm.html', {'error': 'Hasła nie są zgodne.'})
-        return render(request, 'password_reset_confirm.html')
-    else:
-        return render(request, 'password_reset_confirm.html', {'error': 'Nieprawidłowy link do resetowania hasła.'})
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and EmailVerificationToken.objects.filter(user=user, token=token).exists():
+            user.set_password(password1)
+            user.save()
+            EmailVerificationToken.objects.filter(user=user).delete()
+            return redirect('donations:login')
+        else:
+            return render(request, 'activation_invalid.html')
+    return render(request, 'password_reset_confirm.html')
