@@ -1,22 +1,24 @@
+import json
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.db.models import Sum
-from .models import Donation, Institution, Category
-from django.contrib.auth import logout as auth_logout
-import json
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import authenticate
-from django.shortcuts import render, redirect
 from django.http import JsonResponse
-import json
-from .models import Donation
+from django.shortcuts import render, redirect
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from charity_platform import settings
+from .models import Donation, Institution, Category, EmailVerificationToken
+
+from django.urls import reverse
+
+
 def index(request):
     total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
     supported_institutions = Institution.objects.count()
@@ -138,12 +140,45 @@ def register(request):
         else:
             user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
                                             email=email)
+            user.is_active = False
             user.save()
-            return redirect('donations:login')
 
+            # Tworzenie tokenu weryfikacyjnego
+            token = EmailVerificationToken.objects.create(user=user)
+
+            # Wysyłanie emaila weryfikacyjnego
+            current_site = get_current_site(request)
+            mail_subject = 'Aktywuj swoje konto'
+            message = render_to_string('email_verification.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': token.token,
+            })
+            plain_message = f"Cześć {user.first_name},\n\nDziękujemy za zarejestrowanie się na naszej stronie. Proszę kliknij poniższy link, aby aktywować swoje konto:\n\nhttp://{current_site.domain}{reverse('donations:activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token.token})}\n\nJeśli nie rejestrowałeś się na naszej stronie, zignoruj tę wiadomość."
+
+            email = EmailMultiAlternatives(mail_subject, plain_message, settings.DEFAULT_FROM_EMAIL, [email])
+            email.attach_alternative(message, "text/html")
+            email.send()
+
+            return redirect('donations:login')
     return render(request, 'register.html')
 
 
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and EmailVerificationToken.objects.filter(user=user, token=token).exists():
+        user.is_active = True
+        user.save()
+        EmailVerificationToken.objects.filter(user=user).delete()
+        return redirect('donations:login')
+    else:
+        return render(request, 'activation_invalid.html')
 def logout(request):
     auth_logout(request)
     return redirect('donations:index')
@@ -179,6 +214,7 @@ def user_profile(request):
         'last_login': request.user.last_login,
         'donations': donations,
     })
+
 
 @login_required
 def edit_profile(request):
