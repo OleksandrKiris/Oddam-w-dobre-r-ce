@@ -14,7 +14,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from charity_platform import settings
-from .models import Donation, Institution, Category, EmailVerificationToken
+from .models import Donation, Institution, Category, EmailVerificationToken, PasswordResetToken
 
 from django.urls import reverse
 
@@ -179,6 +179,8 @@ def activate(request, uidb64, token):
         return redirect('donations:login')
     else:
         return render(request, 'activation_invalid.html')
+
+
 def logout(request):
     auth_logout(request)
     return redirect('donations:index')
@@ -250,3 +252,55 @@ def change_password(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
+
+
+def password_reset_request(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            token = PasswordResetToken.objects.create(user=user)
+
+            # Send password reset email
+            current_site = get_current_site(request)
+            mail_subject = 'Reset your password'
+            message = render_to_string('password_reset_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': token.token,
+            })
+            plain_message = f"Cześć {user.first_name},\n\nProszę kliknij poniższy link, aby zresetować swoje hasło:\n\nhttp://{current_site.domain}{reverse('donations:password_reset_confirm', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token.token})}\n\nJeśli nie prosiłeś o zresetowanie hasła, zignoruj tę wiadomość."
+
+            email = EmailMultiAlternatives(mail_subject, plain_message, settings.DEFAULT_FROM_EMAIL, [email])
+            email.attach_alternative(message, "text/html")
+            email.send()
+
+            return render(request, 'password_reset.html',
+                          {'message': 'Link do resetowania hasła został wysłany na Twój email.'})
+        else:
+            return render(request, 'password_reset.html', {'message': 'Email nie został znaleziony.'})
+    return render(request, 'password_reset.html')
+
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and PasswordResetToken.objects.filter(user=user, token=token).exists():
+        if request.method == "POST":
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            if password1 == password2:
+                user.set_password(password1)
+                user.save()
+                PasswordResetToken.objects.filter(user=user).delete()
+                return redirect('donations:login')
+            else:
+                return render(request, 'password_reset_confirm.html', {'error': 'Hasła nie są zgodne.'})
+        return render(request, 'password_reset_confirm.html')
+    else:
+        return render(request, 'password_reset_confirm.html', {'error': 'Nieprawidłowy link do resetowania hasła.'})

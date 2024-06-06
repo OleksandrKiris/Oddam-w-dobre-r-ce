@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 import re
 
+
 class Category(models.Model):
     # Nazwa kategorii, unikalna wartość
     name = models.CharField(max_length=255, unique=True, verbose_name="Nazwa")
@@ -110,3 +111,12 @@ class EmailVerificationToken(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.token}"
+
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Password reset token for {self.user.email}"
