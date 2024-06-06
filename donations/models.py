@@ -1,4 +1,6 @@
 # donations/models.py
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, RegexValidator
@@ -99,3 +101,12 @@ class Donation(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()  # Wykonanie walidacji przed zapisaniem
         super().save(*args, **kwargs)
+
+
+class EmailVerificationToken(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='verification_token')
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.token}"
