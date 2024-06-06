@@ -1,4 +1,3 @@
-<!-- donations/templates/register.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -15,7 +14,11 @@
             <input type="text" name="name" placeholder="Imię" required>
         </label>
         {% if errors.name %}
-        <span class="error-message">{{ errors.name }}</span>
+        <span class="error-message">
+          {% for error in errors.name %}
+            {{ error }}
+          {% endfor %}
+        </span>
         {% endif %}
       </div>
       <div class="form-group">
@@ -23,7 +26,11 @@
             <input type="text" name="surname" placeholder="Nazwisko" required>
         </label>
         {% if errors.surname %}
-        <span class="error-message">{{ errors.surname }}</span>
+        <span class="error-message">
+          {% for error in errors.surname %}
+            {{ error }}
+          {% endfor %}
+        </span>
         {% endif %}
       </div>
       <div class="form-group">
@@ -31,7 +38,11 @@
             <input type="email" name="email" placeholder="Email" required>
         </label>
         {% if errors.email %}
-        <span class="error-message">{{ errors.email }}</span>
+        <span class="error-message">
+          {% for error in errors.email %}
+            {{ error }}
+          {% endfor %}
+        </span>
         {% endif %}
       </div>
       <div class="form-group">
@@ -39,7 +50,11 @@
             <input type="password" name="password" placeholder="Hasło" required>
         </label>
         {% if errors.password %}
-        <span class="error-message">{{ errors.password }}</span>
+        <span class="error-message">
+          {% for error in errors.password %}
+            {{ error }}
+          {% endfor %}
+        </span>
         {% endif %}
       </div>
       <div class="form-group">
@@ -47,7 +62,11 @@
             <input type="password" name="password2" placeholder="Powtórz hasło" required>
         </label>
         {% if errors.password2 %}
-        <span class="error-message">{{ errors.password2 }}</span>
+        <span class="error-message">
+          {% for error in errors.password2 %}
+            {{ error }}
+          {% endfor %}
+        </span>
         {% endif %}
       </div>
       <div class="form-group form-group--buttons">
@@ -58,8 +77,10 @@
     {% if errors %}
     <div class="error-message">
       <ul>
-        {% for error in errors.values %}
-          <li>{{ error }}</li>
+        {% for error_list in errors.values %}
+          {% for error in error_list %}
+            <li>{{ error }}</li>
+          {% endfor %}
         {% endfor %}
       </ul>
     </div>
