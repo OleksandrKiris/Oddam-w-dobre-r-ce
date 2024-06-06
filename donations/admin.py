@@ -25,19 +25,19 @@ def export_as_csv(modeladmin, request, queryset):
     return response
 
 
-export_as_csv.short_description = "Export Selected"
+export_as_csv.short_description = "Exportuj zaznaczone"
 
 
 class DateRangeFilter(admin.SimpleListFilter):
-    title = 'date range'
+    title = 'Zakres dat'
     parameter_name = 'date_range'
 
     def lookups(self, request, model_admin):
         return (
-            ('today', 'Today'),
-            ('past_7_days', 'Past 7 Days'),
-            ('this_month', 'This Month'),
-            ('this_year', 'This Year'),
+            ('today', 'Dzisiaj'),
+            ('past_7_days', 'Ostatnie 7 dni'),
+            ('this_month', 'Ten miesiąc'),
+            ('this_year', 'Ten rok'),
         )
 
     def queryset(self, request, queryset):
@@ -71,14 +71,14 @@ class CategoryAdmin(admin.ModelAdmin):
 class InstitutionAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'type',)
     search_fields = ('name', 'description', 'type',)
-    list_filter = ('type',)  # Убран DateRangeFilter
+    list_filter = ('type',)  # Usunięty DateRangeFilter
     filter_horizontal = ('categories',)
     readonly_fields = ('created_at',)
     fieldsets = (
         (None, {
             'fields': ('name', 'description', 'type')
         }),
-        ('Advanced options', {
+        ('Opcje zaawansowane', {
             'classes': ('collapse',),
             'fields': ('categories',),
         }),
@@ -92,7 +92,7 @@ class DonationAdmin(admin.ModelAdmin):
     list_display = (
         'quantity', 'institution', 'address', 'city', 'zip_code', 'pick_up_date', 'pick_up_time', 'user', 'is_taken')
     search_fields = ('institution__name', 'address', 'city', 'zip_code', 'user__username',)
-    list_filter = ('pick_up_date', 'pick_up_time', 'institution', 'is_taken',)  # Убран DateRangeFilter
+    list_filter = ('pick_up_date', 'pick_up_time', 'institution', 'is_taken',)  # Usunięty DateRangeFilter
     date_hierarchy = 'pick_up_date'
     filter_horizontal = ('categories',)
     readonly_fields = ('created_at',)
@@ -101,7 +101,7 @@ class DonationAdmin(admin.ModelAdmin):
             'fields': ('quantity', 'institution', 'address', 'city', 'zip_code', 'pick_up_date', 'pick_up_time', 'user',
                        'is_taken')
         }),
-        ('Advanced options', {
+        ('Opcje zaawansowane', {
             'classes': ('collapse',),
             'fields': ('categories', 'pick_up_comment'),
         }),
@@ -155,7 +155,7 @@ class CustomUserAdmin(DefaultUserAdmin):
         return self.readonly_fields
 
 
-# Зарегистрируйте UserAdmin только если он еще не зарегистрирован
+# Zarejestruj UserAdmin tylko jeśli nie jest już zarejestrowany
 try:
     admin.site.unregister(User)
 except admin.sites.NotRegistered:
@@ -163,18 +163,18 @@ except admin.sites.NotRegistered:
 admin.site.register(User, CustomUserAdmin)
 
 
-# Логирование действий пользователя
+# Logowanie działań użytkownika
 @receiver(post_save, sender=User)
 def log_user_save(sender, instance, created, **kwargs):
     if created:
-        action = "created"
+        action = "utworzony"
     else:
-        action = "updated"
-    # Логируем действие пользователя, например, в файл или базу данных
-    print(f"User {instance.username} was {action}.")
+        action = "zaktualizowany"
+    # Loguj działania użytkownika, np. do pliku lub bazy danych
+    print(f"Użytkownik {instance.username} został {action}.")
 
 
 @receiver(pre_delete, sender=User)
 def log_user_delete(sender, instance, **kwargs):
-    # Логируем удаление пользователя
-    print(f"User {instance.username} was deleted.")
+    # Loguj usunięcie użytkownika
+    print(f"Użytkownik {instance.username} został usunięty.")
