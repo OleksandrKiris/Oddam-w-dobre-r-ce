@@ -42,6 +42,7 @@ class Institution(models.Model):
     type = models.CharField(max_length=50, choices=TYPE_CHOICES, default=FOUNDATION, verbose_name="Typ")
     # Kategorie związane z instytucją
     categories = models.ManyToManyField(Category, verbose_name="Kategorie")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Instytucja"
@@ -81,6 +82,7 @@ class Donation(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Użytkownik")
     # Поле для обозначения, что дар был забран
     is_taken = models.BooleanField(default=False, verbose_name="Zabrany")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Darowizna"
