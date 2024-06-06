@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}My Site{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 </head>
 <body>
 <header class="header--main-page">
@@ -14,29 +16,30 @@
         <ul class="nav--actions">
             {% if user.is_authenticated %}
                 <li class="dropdown">
-                    <a href="#" class="btn btn--small btn--without-border">Witaj {{ user.first_name }}</a>
+                    <a href="#" class="btn btn--small btn--without-border">Witaj {{ user.first_name }} <i class="bi bi-caret-down-fill"></i></a>
                     <div class="dropdown-content">
-                         <a href="{% url 'donations:user_profile' %}">Profil</a>
-                        <a href="{% url 'donations:edit_profile' %}">Ustawienia</a>
-                        <a href="{% url 'donations:change_password' %}">Zmień hasło</a>
+                        <a href="{% url 'donations:user_profile' %}"><i class="bi bi-person"></i> Profil</a>
+                        <a href="{% url 'donations:edit_profile' %}"><i class="bi bi-gear"></i> Ustawienia</a>
+                        <a href="{% url 'donations:change_password' %}"><i class="bi bi-lock"></i> Zmień hasło</a>
                         {% if user.is_superuser %}
-                            <a href="/admin/" class="btn btn--small btn--without-border">Admin Panel</a>
+                            <a href="/admin/" class="btn btn--small btn--without-border"><i class="bi bi-shield-lock"></i> Admin Panel</a>
+                            <a href="{% url 'donations:analyze_data' %}" class="btn btn--small btn--without-border"><i class="bi bi-graph-up"></i> Data Analysis</a>
                         {% endif %}
-                        <a href="{% url 'donations:logout' %}" class="btn btn--small btn--highlighted">Wyloguj</a>
+                        <a href="{% url 'donations:logout' %}" class="btn btn--small btn--highlighted"><i class="bi bi-box-arrow-right"></i> Wyloguj</a>
                     </div>
                 </li>
             {% else %}
-                <li><a href="{% url 'donations:login' %}" class="btn btn--small btn--without-border">Zaloguj</a></li>
-                <li><a href="{% url 'donations:register' %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>
+                <li><a href="{% url 'donations:login' %}" class="btn btn--small btn--without-border"><i class="bi bi-box-arrow-in-right"></i> Zaloguj</a></li>
+                <li><a href="{% url 'donations:register' %}" class="btn btn--small btn--highlighted"><i class="bi bi-pencil-square"></i> Załóż konto</a></li>
             {% endif %}
         </ul>
         <ul>
-            <li><a href="{% url 'donations:index' %}#start" class="btn btn--without-border">Start</a></li>
-            <li><a href="{% url 'donations:index' %}#steps" class="btn btn--without-border">O co chodzi?</a></li>
-            <li><a href="{% url 'donations:index' %}#about-us" class="btn btn--without-border">O nas</a></li>
-            <li><a href="{% url 'donations:index' %}#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
-            <li><a href="{% url 'donations:add_donation' %}" class="btn btn--without-border">Przekaż dary</a></li>
-            <li><a href="{% url 'donations:index' %}#contact" class="btn btn--without-border">Kontakt</a></li>
+            <li><a href="{% url 'donations:index' %}#start" class="btn btn--without-border"><i class="bi bi-house-door"></i> Start</a></li>
+            <li><a href="{% url 'donations:index' %}#steps" class="btn btn--without-border"><i class="bi bi-question-circle"></i> O co chodzi?</a></li>
+            <li><a href="{% url 'donations:index' %}#about-us" class="btn btn--without-border"><i class="bi bi-info-circle"></i> O nas</a></li>
+            <li><a href="{% url 'donations:index' %}#help" class="btn btn--without-border"><i class="bi bi-heart"></i> Fundacje i organizacje</a></li>
+            <li><a href="{% url 'donations:add_donation' %}" class="btn btn--without-border"><i class="bi bi-box-seam"></i> Przekaż dary</a></li>
+            <li><a href="{% url 'donations:index' %}#contact" class="btn btn--without-border"><i class="bi bi-envelope"></i> Kontakt</a></li>
         </ul>
     </nav>
     {% block header %}{% endblock %}
@@ -70,11 +73,13 @@
     <div class="bottom-line">
         <span class="bottom-line--copy">Copyright &copy; 2024</span>
         <div class="bottom-line--icons">
-            <a href="#" class="btn btn--small"><img src="{% static 'images/icon-facebook.svg' %}" alt="Facebook"></a>
-            <a href="#" class="btn btn--small"><img src="{% static 'images/icon-instagram.svg' %}" alt="Instagram"></a>
+            <a href="#" class="btn btn--small"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="btn btn--small"><i class="bi bi-instagram"></i></a>
         </div>
     </div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>
