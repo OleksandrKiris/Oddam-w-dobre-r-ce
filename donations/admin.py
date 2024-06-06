@@ -10,17 +10,18 @@ from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 
+# Funkcja eksportu danych jako plik CSV
 def export_as_csv(modeladmin, request, queryset):
-    meta = modeladmin.model._meta
-    field_names = [field.name for field in meta.fields]
+    model = modeladmin.model
+    field_names = [field.name for field in model._meta.get_fields() if field.concrete and not field.many_to_many]
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename={meta}.csv'
+    response['Content-Disposition'] = f'attachment; filename={model._meta}.csv'
     writer = csv.writer(response)
 
     writer.writerow(field_names)
     for obj in queryset:
-        row = writer.writerow([getattr(obj, field) for field in field_names])
+        writer.writerow([getattr(obj, field) for field in field_names])
 
     return response
 
@@ -28,6 +29,7 @@ def export_as_csv(modeladmin, request, queryset):
 export_as_csv.short_description = "Exportuj zaznaczone"
 
 
+# Filtr zakresu dat
 class DateRangeFilter(admin.SimpleListFilter):
     title = 'Zakres dat'
     parameter_name = 'date_range'
@@ -42,37 +44,41 @@ class DateRangeFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         value = self.value()
+        today = datetime.today()
         if value == 'today':
-            return queryset.filter(created_at__date=datetime.today())
+            return queryset.filter(created_at__date=today)
         if value == 'past_7_days':
-            return queryset.filter(created_at__gte=datetime.today() - timedelta(days=7))
+            return queryset.filter(created_at__gte=today - timedelta(days=7))
         if value == 'this_month':
-            return queryset.filter(created_at__month=datetime.today().month)
+            return queryset.filter(created_at__month=today.month)
         if value == 'this_year':
-            return queryset.filter(created_at__year=datetime.today().year)
+            return queryset.filter(created_at__year=today.year)
         return queryset
 
 
+# Klasa inline dla darowizn
 class DonationInline(admin.TabularInline):
     model = Donation
     extra = 1
     readonly_fields = ('created_at',)
 
 
+# Admin dla kategorii
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
     readonly_fields = ('name',)
     actions = [export_as_csv]
+    list_per_page = 30  # Paginacja
 
 
+# Admin dla instytucji
 @admin.register(Institution)
 class InstitutionAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'type',)
     search_fields = ('name', 'description', 'type',)
-    list_filter = ('type',)  # Usunięty DateRangeFilter
-    filter_horizontal = ('categories',)
+    list_filter = ('type',)
     readonly_fields = ('created_at',)
     fieldsets = (
         (None, {
@@ -85,16 +91,21 @@ class InstitutionAdmin(admin.ModelAdmin):
     )
     actions = [export_as_csv]
     inlines = [DonationInline]
+    list_per_page = 30  # Paginacja
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('category').prefetch_related('donations')
 
 
+# Admin dla darowizn
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):
     list_display = (
         'quantity', 'institution', 'address', 'city', 'zip_code', 'pick_up_date', 'pick_up_time', 'user', 'is_taken')
     search_fields = ('institution__name', 'address', 'city', 'zip_code', 'user__username',)
-    list_filter = ('pick_up_date', 'pick_up_time', 'institution', 'is_taken',)  # Usunięty DateRangeFilter
+    list_filter = ('pick_up_date', 'pick_up_time', 'institution', 'is_taken', DateRangeFilter)
     date_hierarchy = 'pick_up_date'
-    filter_horizontal = ('categories',)
     readonly_fields = ('created_at',)
     fieldsets = (
         (None, {
@@ -107,24 +118,34 @@ class DonationAdmin(admin.ModelAdmin):
         }),
     )
     actions = [export_as_csv]
+    list_per_page = 30  # Paginacja
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('institution', 'user').prefetch_related('categories')
 
 
+# Admin dla tokenów weryfikacji email
 @admin.register(EmailVerificationToken)
 class EmailVerificationTokenAdmin(admin.ModelAdmin):
     list_display = ('user', 'token', 'created_at')
     search_fields = ('user__username', 'token')
     readonly_fields = ('created_at',)
     list_filter = (DateRangeFilter,)
+    list_per_page = 30  # Paginacja
 
 
+# Admin dla tokenów resetu hasła
 @admin.register(PasswordResetToken)
 class PasswordResetTokenAdmin(admin.ModelAdmin):
     list_display = ('user', 'token', 'created_at')
     search_fields = ('user__username', 'token')
     readonly_fields = ('created_at',)
     list_filter = (DateRangeFilter,)
+    list_per_page = 30  # Paginacja
 
 
+# Funkcja usuwania superużytkowników
 def delete_superuser(modeladmin, request, queryset):
     if request.user.is_superuser:
         for user in queryset:
@@ -141,6 +162,7 @@ def delete_superuser(modeladmin, request, queryset):
 delete_superuser.short_description = "Usuń zaznaczonych superużytkowników"
 
 
+# Niestandardowy admin dla użytkowników
 class CustomUserAdmin(DefaultUserAdmin):
     actions = [delete_superuser]
     inlines = [DonationInline]
@@ -148,28 +170,22 @@ class CustomUserAdmin(DefaultUserAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
     list_filter = ('is_staff', 'is_superuser', 'is_active', DateRangeFilter)
     readonly_fields = ('last_login', 'date_joined')
+    list_per_page = 30  # Paginacja
 
     def get_readonly_fields(self, request, obj=None):
         if obj and not request.user.is_superuser:
             return self.readonly_fields + ('is_superuser', 'is_staff')
         return self.readonly_fields
 
-
-# Zarejestruj UserAdmin tylko jeśli nie jest już zarejestrowany
-try:
-    admin.site.unregister(User)
-except admin.sites.NotRegistered:
-    pass
-admin.site.register(User, CustomUserAdmin)
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('profile').prefetch_related('groups')
 
 
 # Logowanie działań użytkownika
 @receiver(post_save, sender=User)
 def log_user_save(sender, instance, created, **kwargs):
-    if created:
-        action = "utworzony"
-    else:
-        action = "zaktualizowany"
+    action = "utworzony" if created else "zaktualizowany"
     # Loguj działania użytkownika, np. do pliku lub bazy danych
     print(f"Użytkownik {instance.username} został {action}.")
 

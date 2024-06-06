@@ -17,9 +17,13 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from charity_platform import settings
 from .models import Donation, Institution, Category, EmailVerificationToken, PasswordResetToken
-
 from django.urls import reverse
-
+from django.shortcuts import render
+from .models import Institution, Category, Donation
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+from django.core.cache import cache
 
 def index(request):
     total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
@@ -144,7 +148,8 @@ def register(request):
         if errors:
             return render(request, 'register.html', {'errors': errors})
         else:
-            user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname, email=email)
+            user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
+                                            email=email)
             user.is_active = False
             user.save()
 
@@ -318,3 +323,103 @@ def password_reset_confirm(request, uidb64=None, token=None):
         else:
             return render(request, 'activation_invalid.html')
     return render(request, 'password_reset_confirm.html')
+
+
+def analyze_data(request):
+    # Получаем фильтры из GET-запроса
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    category_id = request.GET.get('category')
+    institution_id = request.GET.get('institution')
+    user_id = request.GET.get('user')
+
+    # Фильтрация данных
+    donations = Donation.objects.all()
+
+    if start_date:
+        donations = donations.filter(created_at__gte=start_date)
+    if end_date:
+        donations = donations.filter(created_at__lte=end_date)
+    if category_id:
+        donations = donations.filter(categories__id=category_id)
+    if institution_id:
+        donations = donations.filter(institution__id=institution_id)
+    if user_id:
+        donations = donations.filter(user__id=user_id)
+
+    context = {
+        'section': 'analyze_data',
+        'charts': {
+            'donations_by_institution': generate_donations_chart(donations, 'institution', 'Instytucja',
+                                                                 'według instytucji'),
+            'donations_by_category': generate_donations_chart(donations, 'categories', 'Kategoria', 'według kategorii'),
+            'donations_over_time': generate_donations_over_time_chart(donations),
+            'donations_by_user': generate_donations_chart(donations, 'user', 'Użytkownik', 'według użytkownika')
+        },
+        'categories': Category.objects.all(),
+        'institutions': Institution.objects.all(),
+        'users': User.objects.all(),
+        'start_date': start_date,
+        'end_date': end_date,
+        'selected_category': category_id,
+        'selected_institution': institution_id,
+        'selected_user': user_id
+    }
+    return render(request, 'analyze_data.html', context)
+
+
+def generate_donations_chart(donations, filter_field, xlabel, title_suffix):
+    cache_key = f"donations_{filter_field}_{donations.query}"
+    image_base64 = cache.get(cache_key)
+    if not image_base64:
+        field_objects = {
+            'institution': Institution.objects.all(),
+            'categories': Category.objects.all(),
+            'user': User.objects.all()
+        }[filter_field]
+
+        donations_count = [donations.filter(**{filter_field: obj}).count() for obj in field_objects]
+        field_names = [getattr(obj, 'name', getattr(obj, 'username', '')) for obj in field_objects]
+
+        plt.figure(figsize=(10, 5))
+        plt.bar(field_names, donations_count)
+        plt.xlabel(xlabel)
+        plt.ylabel('Liczba darowizn')
+        plt.title(f'Liczba darowizn {title_suffix}')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        plt.close()
+        buffer.seek(0)
+
+        image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        cache.set(cache_key, image_base64, timeout=60 * 15)  # кэшировать на 15 минут
+    return image_base64
+
+
+def generate_donations_over_time_chart(donations):
+    cache_key = f"donations_over_time_{donations.query}"
+    image_base64 = cache.get(cache_key)
+    if not image_base64:
+        dates = [donation.created_at.date() for donation in donations]
+        unique_dates = sorted(set(dates))
+        donations_per_day = [dates.count(date) for date in unique_dates]
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(unique_dates, donations_per_day, marker='o')
+        plt.xlabel('Data')
+        plt.ylabel('Liczba darowizn')
+        plt.title('Liczba darowizn w czasie')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        plt.close()
+        buffer.seek(0)
+
+        image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        cache.set(cache_key, image_base64, timeout=60 * 15)  # кэшировать на 15 минут
+    return image_base64
