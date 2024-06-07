@@ -122,3 +122,19 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Password reset token for {self.user.email}"
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Imię")
+    surname = models.CharField(max_length=255, verbose_name="Nazwisko")
+    email = models.EmailField(verbose_name="Email")
+    message = models.TextField(verbose_name="Wiadomość")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Utworzono")
+
+    class Meta:
+        verbose_name = "Wiadomość kontaktowa"
+        verbose_name_plural = "Wiadomości kontaktowe"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Wiadomość od {self.name} {self.surname} ({self.email})"

@@ -20,12 +20,12 @@
     <div class="stats--item">
       <em>{{ total_bags }}</em>
       <h3>Oddanych worków</h3>
-      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius est beatae, quod accusamus illum tempora!</p>
+      <p>Każdy worek przekazany do nas pomaga potrzebującym i wspiera zrównoważony rozwój. Dziękujemy za Twoje wsparcie!</p>
     </div>
     <div class="stats--item">
       <em>{{ supported_institutions }}</em>
       <h3>Wspartych organizacji</h3>
-      <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laboriosam magnam, sint nihil cupiditate quas quam.</p>
+      <p>Współpracujemy z licznymi organizacjami charytatywnymi, aby Twoje darowizny trafiły tam, gdzie są najbardziej potrzebne.</p>
     </div>
   </div>
 </section>
@@ -60,7 +60,7 @@
 <section id="about-us" class="about-us">
   <div class="about-us--text">
     <h2>O nas</h2>
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptas vitae animi rem pariatur incidunt libero optio esse quisquam illo omnis.</p>
+    <p>Jesteśmy organizacją non-profit, która ułatwia darowanie niechcianych rzeczy. Nasza misja to wspieranie potrzebujących i promowanie zrównoważonego stylu życia.</p>
     <img src="{% static 'images/signature.svg' %}" class="about-us--text-signature" alt="Signature">
   </div>
   <div class="about-us--image">
@@ -117,9 +117,7 @@
 
   <!-- SLIDE 2 -->
   <div class="help--slides" data-id="ngos">
-    <p>
-      Lorem ipsum dolor, sit amet consectetur adipisicing elit. Hic officiis mollitia dolor, neque aspernatur accusamus debitis. Ducimus, officia. Quia, sunt illum! Non iste placeat ab ipsum alias quos suscipit corporis!
-    </p>
+    <p>Organizacje pozarządowe, które wspieramy, działają na rzecz różnych grup społecznych, oferując pomoc tam, gdzie jest ona najbardziej potrzebna. Poznaj ich działalność i dowiedz się, jak możesz się zaangażować.</p>
     <ul class="help--slides-items">
       {% for institution in page_obj_ngos %}
       <li>
@@ -158,7 +156,7 @@
 
   <!-- SLIDE 3 -->
   <div class="help--slides" data-id="local_collections">
-    <p>Lorem ipsum dolor sit amet, his ocurreret persequeris ea, ad utinam laudem duo. Verterem adipisci partiendo eos ne, ea his reque quaeque recteque, ne quo lobortis intellegam.</p>
+    <p>Lokalne zbiórki organizowane przez nas i naszych partnerów mają na celu wsparcie społeczności w Twojej okolicy. Dowiedz się, jak możesz pomóc swoim sąsiadom i lokalnym organizacjom.</p>
     <ul class="help--slides-items">
       {% for institution in page_obj_local_collections %}
       <li>
@@ -196,4 +194,3 @@
   </div>
 </section>
 {% endblock %}
-

@@ -396,6 +396,7 @@ template {
 /* line 5, scss/modules/_base.scss */
 html {
   font-size: 62.5%;
+
 }
 
 /* line 9, scss/modules/_base.scss */
@@ -1504,101 +1505,6 @@ header nav ul li:last-of-type {
   margin: 0 8px;
 }
 
-/* line 1, scss/modules/_footer.scss */
-footer {
-  min-height: 80vh;
-  background-image: url(../images/footer-bg.jpg);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-align: end;
-      -ms-flex-align: end;
-          align-items: flex-end;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
-  position: relative;
-}
-
-/* line 13, scss/modules/_footer.scss */
-footer .contact {
-  max-width: 580px;
-  width: 100%;
-  padding-right: 30px;
-  -webkit-box-flex: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-}
-
-/* line 22, scss/modules/_footer.scss */
-footer .contact h3 {
-  padding: 0 15px;
-  font-size: 1.4rem;
-  text-transform: uppercase;
-}
-
-/* line 29, scss/modules/_footer.scss */
-footer .contact form {
-  margin-top: 15px;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-}
-
-/* line 33, scss/modules/_footer.scss */
-footer .contact form [type="submit"] {
-  margin-top: 35px;
-}
-
-/* line 39, scss/modules/_footer.scss */
-footer .bottom-line {
-  -ms-flex-item-align: center;
-      align-self: center;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  margin-bottom: 12px;
-}
-
-/* line 44, scss/modules/_footer.scss */
-footer .bottom-line--copy {
-  font-family: 'Merriweather', serif;
-  font-weight: 400;
-  font-style: normal;
-  font-size: 1.2rem;
-}
-
-/* line 49, scss/modules/_footer.scss */
-footer .bottom-line--icons {
-  position: absolute;
-  right: 10vw;
-  bottom: 20px;
-}
-
-/* line 55, scss/modules/_footer.scss */
-footer .bottom-line--icons a img {
-  width: 20px;
-  height: 20px;
-  opacity: 0.8;
-}
-
 /* line 19, scss/style.scss */
 .login-page {
   display: -webkit-box;
@@ -2080,4 +1986,255 @@ footer .bottom-line--icons a img {
 
 .donations-table .archived {
     color: grey;
+}
+
+/* ----------------------------------Общие стили для футера --------------------------------------------------------*/
+footer {
+    min-height: 80vh;
+    background-image: url(../images/footer-bg.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    position: relative;
+}
+
+footer .contact {
+    max-width: 580px;
+    width: 100%;
+    padding-right: 30px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+footer .contact h3 {
+    padding: 0 15px;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+}
+
+footer .contact form {
+    margin-top: 15px;
+    justify-content: center;
+}
+
+footer .contact form [type="submit"] {
+    margin-top: 35px;
+}
+
+footer .bottom-line {
+    align-self: center;
+    display: flex;
+    margin-bottom: 12px;
+}
+
+footer .bottom-line--copy {
+    font-family: 'Merriweather', serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1.2rem;
+}
+
+footer .bottom-line--icons {
+    position: absolute;
+    right: 10vw;
+    bottom: 20px;
+}
+
+footer .bottom-line--icons a img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+}
+
+.footer-custom {
+    background-color: #343a40;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem; /* Стандартный размер текста */
+    position: relative;
+}
+
+/* Стили для заголовков в футере */
+.about-title, .navigation-title, .contact-info-title {
+    color: white; /* Белый текст для контраста */
+    font-weight: bold;
+    font-size: 1.8rem; /* Увеличенный размер текста */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem; /* Отступ снизу */
+}
+
+/* Стили для текста в секции "О нас" */
+.about-text {
+    color: white; /* Белый текст для контраста */
+    font-weight: normal;
+    font-size: 1.2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem; /* Отступ снизу */
+    text-align: left; /* Выравнивание текста по левому краю */
+}
+
+/* Стили для списка навигации */
+.navigation-list {
+    list-style: none;
+    padding: 0;
+}
+
+.navigation-list li {
+    margin-bottom: 0.5rem; /* Отступ снизу у элементов списка */
+}
+
+/* Стили для ссылок в списке навигации */
+.navigation-link {
+    color: white; /* Белый текст для контраста */
+    text-decoration: none;
+    font-weight: normal;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.navigation-link:hover {
+    text-decoration: underline;
+    color: #ffc107;
+}
+
+/* Стили для социальных кнопок */
+.social-facebook, .social-instagram, .social-twitter, .social-linkedin {
+    border-color: white; /* Белый цвет для контраста */
+    color: white; /* Белый цвет для контраста */
+    font-weight: bold;
+    font-size: 1.2rem; /* Стандартный размер текста */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.social-facebook:hover, .social-instagram:hover, .social-twitter:hover, .social-linkedin:hover {
+    background-color: white; /* Белый фон при наведении */
+    color: #343a40;
+}
+
+/* Стили для секции контактов */
+.contact-section {
+    background-color: transparent !important; /* Сделаем секцию полностью прозрачной */
+    color: #343a40;
+    padding-right: 15px;
+    font-weight: bold;
+    font-size: 1.2rem; /* Стандартный размер текста */
+    box-shadow: none; /* Убираем тень */
+}
+
+/* Стили для заголовков в секции контактов */
+.contact-title, .contact-subtitle {
+    color: #343a40;
+    font-weight: bold;
+    font-size: 1.8rem; /* Увеличенный размер текста */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem; /* Отступ снизу */
+}
+
+/* Стили для формы */
+.contact-form {
+    background-color: transparent !important; /* Полностью прозрачный фон */
+    width: 70%; /* Ширина формы */
+    max-width: 800px; /* Ограничение максимальной ширины */
+    padding: 2rem; /* Поля внутри формы */
+    border-radius: 8px; /* Скругленные углы */
+    box-shadow: none; /* Убираем тень */
+}
+
+/* Стили для элементов формы в секции контактов */
+.contact-input, .contact-label {
+    border: 1px solid #343a40;
+    color: #343a40;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Стили для placeholder в input и textarea */
+.contact-input::placeholder {
+    color: #6c757d;
+}
+
+/* Стили для кнопок */
+.btn-custom {
+    background-color: #ffc107;
+    border: none;
+    color: #343a40;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-custom:hover {
+    background-color: #343a40;
+    color: #ffc107;
+}
+
+/* Стили для адреса */
+.contact-info-address {
+    color: white;
+    font-weight: normal;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+/* Стили для текста в центре футера */
+.footer-center .footer-text, .footer-center .footer-link {
+    color: white;
+    font-weight: normal;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.footer-center .footer-link:hover {
+    text-decoration: underline;
+    color: #ffc107;
+}
+
+/* Стили для разделительной линии */
+.divider {
+    width: 100%;
+    height: 2px;
+    background-color: white;
+    margin-bottom: 2rem;
+}
+
+/* Дополнительные стили для секции с черным фоном */
+.solid-background-section {
+    background-color: #343a40;
+    padding-top: 2rem;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    width: 100%;
+}
+
+
+/* Стили для контейнера с лозунгом */
+.slogan-container {
+  padding: 20px;
+  background-color: #f0f0f0;
+}
+
+/* Стили для элемента лозунга */
+.slogan-item {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Стили для карточки Regulamin */
+#regulamin-card {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Добавляем отступ между разделами */
+.regulations-section {
+  margin-bottom: 40px;
 }

@@ -47,37 +47,93 @@
 <main>
     {% block content %}{% endblock %}
 </main>
-<footer>
-    <div id="contact" class="contact">
-        <h2>Skontaktuj się z nami</h2>
-        <h3>Formularz kontaktowy</h3>
-        <form class="form--contact">
-            <div class="form-group form-group--50">
-                <label>
-                    <input type="text" name="name" placeholder="Imię">
-                </label>
-            </div>
-            <div class="form-group form-group--50">
-                <label>
-                    <input type="text" name="surname" placeholder="Nazwisko">
-                </label>
-            </div>
-            <div class="form-group">
-                <label>
-                    <textarea name="message" placeholder="Wiadomość" rows="1"></textarea>
-                </label>
-            </div>
-            <button class="btn" type="submit">Wyślij</button>
-        </form>
+<footer class="footer-custom bg-dark text-white mt-5">
+    <!-- Contact Form Section -->
+    <div id="contact" class="contact-section py-5">
+        <h2 class="contact-title text-center">Skontaktuj się z nami</h2>
+        <div class="container d-flex justify-content-center">
+            <form class="row g-3 contact-form bg-white shadow rounded p-4" method="POST" action="{% url 'donations:contact' %}">
+                {% csrf_token %}
+                <div class="col-12">
+                    <label for="name" class="form-label">Imię</label>
+                    <input type="text" class="form-control contact-input" id="name" name="name" placeholder="Wpisz imię" required>
+                    {% if form.name.errors %}
+                        <div class="text-danger">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="surname" class="form-label">Nazwisko</label>
+                    <input type="text" class="form-control contact-input" id="surname" name="surname" placeholder="Wpisz nazwisko" required>
+                    {% if form.surname.errors %}
+                        <div class="text-danger">{{ form.surname.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control contact-input" id="email" name="email" placeholder="Wpisz email" required>
+                    {% if form.email.errors %}
+                        <div class="text-danger">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="message" class="form-label">Wiadomość</label>
+                    <textarea class="form-control contact-input" id="message" name="message" rows="4" placeholder="Wpisz wiadomość" required></textarea>
+                    {% if form.message.errors %}
+                        <div class="text-danger">{{ form.message.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12 text-center">
+                    <button class="btn btn-primary btn-custom mt-3" type="submit">Wyślij</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="bottom-line">
-        <span class="bottom-line--copy">Copyright &copy; 2024</span>
-        <div class="bottom-line--icons">
-            <a href="#" class="btn btn--small"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="btn btn--small"><i class="bi bi-instagram"></i></a>
+
+    <!-- New Section with Solid Background -->
+    <div class="solid-background-section text-white w-100" style="background-color: #343a40; margin-bottom: 0; padding-bottom: 0;">
+        <div class="container py-5" style="margin-bottom: 0; padding-bottom: 0;">
+            <div class="row">
+                <div class="col-md-4 mb-3 about-section">
+                    <h5 class="about-title">O nas</h5>
+                    <p class="about-text">Jesteśmy organizacją non-profit, która ułatwia darowanie niechcianych rzeczy. Nasza misja to wspieranie potrzebujących i promowanie zrównoważonego stylu życia.</p>
+                </div>
+                <div class="col-md-4 mb-3 navigation-section">
+                    <h5 class="navigation-title">Nawigacja</h5>
+                    <ul class="list-unstyled navigation-list">
+                        <li><a href="{% url 'donations:index' %}#start" class="navigation-link">Start</a></li>
+                        <li><a href="{% url 'donations:index' %}#steps" class="navigation-link">O co chodzi?</a></li>
+                        <li><a href="{% url 'donations:index' %}#about-us" class="navigation-link">O nas</a></li>
+                        <li><a href="{% url 'donations:index' %}#help" class="navigation-link">Fundacje i organizacje</a></li>
+                        <li><a href="{% url 'donations:add_donation' %}" class="navigation-link">Przekaż dary</a></li>
+                        <li><a href="{% url 'donations:index' %}#contact" class="navigation-link">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-3 contact-info-section">
+                    <h5 class="contact-info-title">Kontakt</h5>
+                    <address class="contact-info-address">
+                        <strong>Nasza firma</strong><br>
+                        12345 Główna Ulica<br>
+                        Miasto, Kraj<br>
+                        <abbr title="Phone">P:</abbr> (123) 456-7890
+                    </address>
+                    <div class="d-flex">
+                        <a href="#" class="btn btn-outline-light btn-social mx-1 social-facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-social mx-1 social-instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-social mx-1 social-twitter"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-light btn-social mx-1 social-linkedin"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col text-center footer-center">
+                    <p class="footer-text">&copy; 2024 Nasza firma. Wszelkie prawa zastrzeżone.</p>
+                    <p><a href="{% url 'donations:privacy_policy' %}" class="footer-link">Polityka prywatności</a> | <a href="{% url 'donations:terms_of_service' %}" class="footer-link">Regulamin</a></p>
+                </div>
+            </div>
         </div>
     </div>
 </footer>
+
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="{% static 'js/app.js' %}"></script>
