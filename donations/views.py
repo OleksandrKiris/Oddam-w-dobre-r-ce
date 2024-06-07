@@ -10,13 +10,14 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from charity_platform import settings
-from .models import Donation, Institution, Category, EmailVerificationToken, PasswordResetToken
+from .forms import ContactForm
+from .models import EmailVerificationToken, PasswordResetToken
 from django.urls import reverse
 from django.shortcuts import render
 from .models import Institution, Category, Donation
@@ -24,6 +25,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from django.core.cache import cache
+
 
 def index(request):
     total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
@@ -57,7 +59,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-@login_required
+@login_required(login_url='donations:register')
 def add_donation(request):
     if request.method == 'POST':
         categories = request.POST.getlist('categories')
@@ -423,3 +425,32 @@ def generate_donations_over_time_chart(donations):
         image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         cache.set(cache_key, image_base64, timeout=60 * 15)  # кэшировать на 15 минут
     return image_base64
+
+
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            contact_message = form.save()
+            # Отправить email администраторам
+            subject = f"Nowa wiadomość kontaktowa od {contact_message.name} {contact_message.surname}"
+            message = f"Imię: {contact_message.name}\nNazwisko: {contact_message.surname}\nEmail: {contact_message.email}\n\nWiadomość:\n{contact_message.message}"
+            admin_emails = [user.email for user in User.objects.filter(is_superuser=True)]
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, admin_emails)
+            messages.success(request, 'Twoja wiadomość została wysłana. Dziękujemy za kontakt!')
+            return redirect('donations:index')
+        else:
+            for field, error_list in form.errors.items():
+                for error in error_list:
+                    messages.error(request, error)
+    else:
+        form = ContactForm()
+    return render(request, 'base.html', {'form': form})
+
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+
+def terms_of_service(request):
+    return render(request, 'terms_of_service.html')

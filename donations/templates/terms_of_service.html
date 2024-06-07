@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<div class="slogan container container--90">
+  <div class="slogan--item">
+    <h2 class="mb-0">
+      <a href="#content" class="text-decoration-none text-dark">Regulamin <i class="bi bi-chevron-down"></i></a>
+    </h2>
+  </div>
+</div>
+{% endblock %}
+
+{% block title %}
+<div style="background-color: #f8f9fa; padding: 20px;">
+  Regulamin
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content" class="container-fluid mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card border-0 text-center h-100" style="height: 100vh;">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="display-3 mb-0">
+                        <i class="bi bi-journal mr-3"></i>
+                        Regulamin
+                    </h2>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3">
+                                <h2 class="mb-3"><i class="bi bi-file-text mr-3"></i>Postanowienia ogólne</h2>
+                                <p class="fs-4">
+                                    <i class="bi bi-info-circle-fill text-primary mr-2"></i>
+                                    Regulamin określa zasady korzystania z Serwisu, prawa i obowiązki Użytkowników oraz zasady odpowiedzialności.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3">
+                                <h2 class="mb-3"><i class="bi bi-file-earmark-text mr-3"></i>Warunki korzystania z Serwisu</h2>
+                                <p class="fs-4">
+                                    <i class="bi bi-info-circle-fill text-primary mr-2"></i>
+                                    Aby korzystać z Serwisu, Użytkownik musi posiadać urządzenie z dostępem do Internetu oraz przeglądarkę internetową.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3">
+                                <h2 class="mb-3"><i class="bi bi-shield-check mr-3"></i>Prawa i obowiązki Użytkowników</h2>
+                                <p class="fs-4">
+                                    <i class="bi bi-info-circle-fill text-primary mr-2"></i>
+                                    Użytkownicy zobowiązani są do korzystania z Serwisu zgodnie с jego przeznaczeniem oraz до przestrzegania obowiązujących przepisów prawa.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3">
+                                <h2 class="mb-3"><i class="bi bi-shield-lock mr-3"></i>Odpowiedzialność</h2>
+                                <p class="fs-4">
+                                    <i class="bi bi-info-circle-fill text-primary mr-2"></i>
+                                    Administrator nie ponosi odpowiedzialności za:
+                                </p>
+                                <ul class="list-unstyled fs-4">
+                                    <li class="mb-2">
+                                        <i class="bi bi-exclamation-circle-fill text-danger mr-2"></i>
+                                        szkody spowodowane nieprawidłowym korzystaniem з Serwisu,
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-tools text-warning mr-2"></i>
+                                        problemy techniczne leżące по stronie Użytkownika,
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-clock text-info mr-2"></i>
+                                        czasowe niedostępności Serwisu wynikające з konieczności przeprowadzenia prac konserwacyjnych.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3">
+                                <h2 class="mb-3"><i class="bi bi-journal-check mr-3"></i>Postanowienia końcowe</h2>
+                                <p class="fs-4">
+                                    <i class="bi bi-info-circle-fill text-primary mr-2"></i>
+                                    Regulamin wchodzi в życie з dniem jego publikacji на stronie Serwisu. Administrator zastrzega себе prawo до wprowadzania изменений в Regulaminie.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
