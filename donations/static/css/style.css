@@ -1894,7 +1894,7 @@ header nav ul li:last-of-type {
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
     padding: 40px;
-    max-width: 500px;
+    max-width: 600px;
     text-align: center; /* Центрирование текста */
     margin-right: 200px; /* Отступ от навигации */
 }
@@ -1961,13 +1961,13 @@ header nav ul li:last-of-type {
 .donations-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 18px; /* Увеличенный шрифт */
+    font-size: 15px; /* Увеличенный шрифт */
 }
 
 .donations-table th,
 .donations-table td {
     border: 1px solid #ddd;
-    padding: 12px;
+    padding: 8px;
     text-align: left;
 }
 
@@ -1987,6 +1987,47 @@ header nav ul li:last-of-type {
 .donations-table .archived {
     color: grey;
 }
+
+   .search-filter-container {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .search-label, .filter-label {
+        margin-right: 10px;
+    }
+
+    .search-input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+        width: 200px; /* Ширина поля поиска */
+    }
+
+    .filter-select {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .filter-button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .filter-button:hover {
+        background-color: #0056b3;
+    }
+
 
 /* ----------------------------------Общие стили для футера --------------------------------------------------------*/
 footer {
@@ -2238,3 +2279,144 @@ footer .bottom-line--icons a img {
 .regulations-section {
   margin-bottom: 40px;
 }
+
+.help--slides {
+  display: none;
+}
+.help--slides.active {
+  display: block;
+}
+
+.btn--without-border.active {
+  /* Добавьте стили для активных кнопок вкладок */
+  color: #333;
+  font-weight: bold;
+}
+
+
+ #report-problem .card {
+        margin-bottom: 20px;
+    }
+    #report-problem .card-body {
+        font-size: 24px; /* Увеличен размер шрифта */
+    }
+    #report-problem .form-label {
+        font-size: 26px; /* Увеличен размер шрифта */
+        display: block;
+        margin-bottom: 10px;
+    }
+    #report-problem .form-control {
+        font-size: 22px; /* Увеличен размер текста в формах */
+        height: calc(2.75rem + 10px); /* Увеличена высота полей ввода */
+    }
+    #report-problem .btn-lg {
+        font-size: 22px; /* Увеличен размер шрифта кнопки */
+        padding: 10px 20px;
+    }
+    #report-problem .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    #report-problem .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+    #report-problem p {
+        font-size: 22px; /* Увеличен размер шрифта */
+    }
+    #report-problem .text-center {
+        text-align: center;
+    }
+    #report-problem .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    /* Применяем большие размеры для всех форм */
+    #report-problem input.form-control,
+    #report-problem select.form-control,
+    #report-problem textarea.form-control {
+        font-size: 22px; /* Увеличен размер текста в формах */
+        height: calc(2.75rem + 10px); /* Увеличена высота полей ввода */
+    }
+
+
+
+
+/* Сброс стилей */
+.custom-form-confirmation * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+/* Основные стили */
+.custom-form-confirmation {
+    padding-top: 5rem; /* Отступ сверху от навигации */
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    height: 100vh; /* Высота окна */
+}
+
+.custom-form-confirmation .container-fluid {
+    padding-right: 2rem; /* Увеличенный отступ справа от навигации */
+}
+
+.custom-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; /* Центрирование содержимого по горизонтали */
+    height: 100%; /* Высокая карточка */
+    margin-top: 15rem; /* Отступ сверху от навигации */
+    margin-right: 20rem; /* Отступ справа */
+    text-align: center; /* Центрирование текста */
+}
+
+.custom-card h2 {
+    font-size: 2.5rem; /* Увеличение шрифта заголовка */
+    margin-bottom: 1.5rem;
+}
+
+.custom-card h3 {
+    font-size: 2rem; /* Увеличение шрифта подзаголовка */
+    margin-bottom: 1rem;
+}
+
+.custom-card p {
+    font-size: 1.5rem; /* Увеличение шрифта текста */
+    margin-bottom: 1.5rem;
+}
+
+.custom-card .btn {
+    font-size: 1.5rem; /* Увеличение шрифта кнопки */
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+}
+
+.custom-card .btn:hover {
+    background-color: #0056b3;
+}
+
+.custom-card .image-content {
+    margin-top: 2rem; /* Отступ сверху для изображения */
+    text-align: center;
+}
+
+.custom-card .custom-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+

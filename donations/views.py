@@ -1,3 +1,4 @@
+# Importowanie potrzebnych bibliotek
 import json
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,151 +9,184 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.http import JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
 from charity_platform import settings
-from .forms import ContactForm
-from .models import EmailVerificationToken, PasswordResetToken
-from django.urls import reverse
-from django.shortcuts import render
-from .models import Institution, Category, Donation
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
-from django.core.cache import cache
+from .forms import ContactForm, ProblemReportForm
+from .models import EmailVerificationToken, PasswordResetToken, Institution, Category, Donation
 
 
+# Widok dla strony głównej
 def index(request):
-    total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))['total_bags'] or 0
-    supported_institutions = Institution.objects.count()
+    """
+    Widok strony głównej serwisu, który wyświetla główne statystyki oraz listę instytucji.
+    Zlicza łączną liczbę worków z darowizn oraz liczbę wspieranych instytucji.
+    Umożliwia paginację dla listy instytucji w trzech kategoriach: fundacje, NGO i zbiórki lokalne.
+    """
+    total_bags = Donation.objects.aggregate(total_bags=Sum('quantity'))[
+                     'total_bags'] or 0  # Zliczenie łącznej ilości worków
+    supported_institutions = Institution.objects.count()  # Zliczenie liczby wspieranych instytucji
 
-    # Пагинация для каждой секции
-    foundations = Institution.objects.filter(type=Institution.FOUNDATION)
-    ngos = Institution.objects.filter(type=Institution.NGO)
-    local_collections = Institution.objects.filter(type=Institution.LOCAL_COLLECTION)
+    # Paginacja dla każdej sekcji instytucji
+    foundations = Institution.objects.filter(type=Institution.FOUNDATION)  # Pobranie listy fundacji
+    ngos = Institution.objects.filter(type=Institution.NGO)  # Pobranie listy NGO
+    local_collections = Institution.objects.filter(
+        type=Institution.LOCAL_COLLECTION)  # Pobranie listy lokalnych zbiórek
 
-    paginator_foundations = Paginator(foundations, 5)
-    paginator_ngos = Paginator(ngos, 5)
-    paginator_local_collections = Paginator(local_collections, 5)
+    paginator_foundations = Paginator(foundations, 5)  # Paginacja dla fundacji (5 na stronę)
+    paginator_ngos = Paginator(ngos, 5)  # Paginacja dla NGO (5 na stronę)
+    paginator_local_collections = Paginator(local_collections, 5)  # Paginacja dla lokalnych zbiórek (5 na stronę)
 
-    page_number_foundations = request.GET.get('page_foundations')
-    page_number_ngos = request.GET.get('page_ngos')
-    page_number_local_collections = request.GET.get('page_local_collections')
+    page_number_foundations = request.GET.get('page_foundations')  # Numer strony dla fundacji
+    page_number_ngos = request.GET.get('page_ngos')  # Numer strony dla NGO
+    page_number_local_collections = request.GET.get('page_local_collections')  # Numer strony dla lokalnych zbiórek
 
-    page_obj_foundations = paginator_foundations.get_page(page_number_foundations)
-    page_obj_ngos = paginator_ngos.get_page(page_number_ngos)
-    page_obj_local_collections = paginator_local_collections.get_page(page_number_local_collections)
+    page_obj_foundations = paginator_foundations.get_page(
+        page_number_foundations)  # Pobranie odpowiedniej strony dla fundacji
+    page_obj_ngos = paginator_ngos.get_page(page_number_ngos)  # Pobranie odpowiedniej strony dla NGO
+    page_obj_local_collections = paginator_local_collections.get_page(
+        page_number_local_collections)  # Pobranie odpowiedniej strony dla lokalnych zbiórek
 
     context = {
-        'total_bags': total_bags,
-        'supported_institutions': supported_institutions,
-        'page_obj_foundations': page_obj_foundations,
-        'page_obj_ngos': page_obj_ngos,
-        'page_obj_local_collections': page_obj_local_collections,
+        'total_bags': total_bags,  # Przekazanie do szablonu łącznej ilości worków
+        'supported_institutions': supported_institutions,  # Przekazanie do szablonu liczby wspieranych instytucji
+        'page_obj_foundations': page_obj_foundations,  # Przekazanie do szablonu strony fundacji
+        'page_obj_ngos': page_obj_ngos,  # Przekazanie do szablonu strony NGO
+        'page_obj_local_collections': page_obj_local_collections,  # Przekazanie do szablonu strony lokalnych zbiórek
     }
 
-    return render(request, 'index.html', context)
+    return render(request, 'index.html', context)  # Renderowanie strony głównej z danymi kontekstowymi
 
 
+# Widok do dodania darowizny
 @login_required(login_url='donations:register')
 def add_donation(request):
+    """
+    Widok formularza dodawania darowizny, umożliwiający zalogowanemu użytkownikowi przekazanie darowizny.
+    Sprawdza poprawność wprowadzonych danych i zapisuje darowiznę do bazy danych.
+    """
     if request.method == 'POST':
-        categories = request.POST.getlist('categories')
-        quantity = request.POST.get('bags')
-        institution_id = request.POST.get('organization')
-        address = request.POST.get('address')
-        city = request.POST.get('city')
-        postcode = request.POST.get('postcode')
-        phone = request.POST.get('phone')
-        pick_up_date = request.POST.get('date')
-        pick_up_time = request.POST.get('time')
-        more_info = request.POST.get('more_info', '')
+        categories = request.POST.getlist('categories')  # Pobranie listy kategorii z formularza
+        quantity = request.POST.get('bags')  # Pobranie ilości worków z formularza
+        institution_id = request.POST.get('organization')  # Pobranie ID instytucji z formularza
+        address = request.POST.get('address')  # Pobranie adresu z formularza
+        city = request.POST.get('city')  # Pobranie miasta z formularza
+        postcode = request.POST.get('postcode')  # Pobranie kodu pocztowego z formularza
+        phone = request.POST.get('phone')  # Pobranie numeru telefonu z formularza
+        pick_up_date = request.POST.get('date')  # Pobranie daty odbioru z formularza
+        pick_up_time = request.POST.get('time')  # Pobranie czasu odbioru z formularza
+        more_info = request.POST.get('more_info', '')  # Pobranie dodatkowych informacji z formularza (opcjonalne)
+
+        # Sprawdzenie, czy wszystkie wymagane dane są obecne
+        if not categories or not quantity or not institution_id or not address or not city or not postcode or not phone or not pick_up_date or not pick_up_time:
+            return JsonResponse({'success': False, 'error': 'Wszystkie pola muszą być wypełnione.'})
 
         try:
-            institution = Institution.objects.get(id=institution_id)
+            institution = Institution.objects.get(id=institution_id)  # Pobranie instytucji na podstawie ID
         except Institution.DoesNotExist:
-            messages.error(request, "Wybrana instytucja nie istnieje.")
-            return redirect('donations:form')
+            return JsonResponse({'success': False, 'error': 'Wybrana instytucja nie istnieje.'})
 
-        donation = Donation(
-            quantity=quantity,
-            institution=institution,
-            address=address,
-            phone_number=phone,
-            city=city,
-            zip_code=postcode,
-            pick_up_date=pick_up_date,
-            pick_up_time=pick_up_time,
-            pick_up_comment=more_info,
-            user=request.user
-        )
-        donation.save()
-        donation.categories.set(categories)
+        try:
+            # Tworzenie obiektu darowizny i zapisanie go do bazy danych
+            donation = Donation(
+                quantity=quantity,
+                institution=institution,
+                address=address,
+                phone_number=phone,
+                city=city,
+                zip_code=postcode,
+                pick_up_date=pick_up_date,
+                pick_up_time=pick_up_time,
+                pick_up_comment=more_info,
+                user=request.user
+            )
+            donation.save()  # Zapisanie darowizny do bazy danych
+            donation.categories.set(categories)  # Przypisanie kategorii do darowizny
 
-        return redirect('donations:form_confirmation')
+            return redirect('donations:form_success')  # Przekierowanie na stronę potwierdzenia
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})  # Obsługa błędów i zwrócenie odpowiedzi JSON
 
-    categories = Category.objects.all()
-    institutions = Institution.objects.prefetch_related('categories').all()
-    return render(request, 'form.html', {'categories': categories, 'institutions': institutions})
+    categories = Category.objects.all()  # Pobranie wszystkich kategorii
+    institutions = Institution.objects.prefetch_related(
+        'categories').all()  # Pobranie wszystkich instytucji z powiązanymi kategoriami
+    return render(request, 'form.html',
+                  {'categories': categories, 'institutions': institutions})  # Renderowanie formularza z danymi
 
 
+# Widok dla potwierdzenia formularza
 @login_required
-def form_confirmation(request):
-    return render(request, 'form-confirmation.html')
+def form_success(request):
+    """
+    Widok potwierdzenia formularza dodawania darowizny, wyświetlany po pomyślnym dodaniu darowizny.
+    """
+    return render(request, 'form_success.html')  # Renderowanie strony potwierdzenia
 
 
+# Widok logowania
 def login(request):
+    """
+    Widok logowania użytkownika. Umożliwia użytkownikom logowanie się na swoje konto.
+    Weryfikuje dane logowania i autoryzuje użytkownika.
+    """
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.POST.get('email')  # Pobranie adresu email z formularza logowania
+        password = request.POST.get('password')  # Pobranie hasła z formularza logowania
 
-        user = authenticate(request, username=email, password=password)
+        user = authenticate(request, username=email, password=password)  # Uwierzytelnienie użytkownika
         if user is not None:
-            auth_login(request, user)
-            return redirect('/admin/' if user.is_superuser else 'donations:index')
+            auth_login(request, user)  # Zalogowanie użytkownika
+            return redirect('/admin/' if user.is_superuser else 'donations:index')  # Przekierowanie po zalogowaniu
         else:
-            errors = {'email': 'Nieprawidłowy email lub hasło'}
-            return render(request, 'login.html', {'errors': errors})
-    return render(request, 'login.html')
+            errors = {'email': 'Nieprawidłowy email lub hasło'}  # Błąd uwierzytelnienia
+            return render(request, 'login.html', {'errors': errors})  # Renderowanie strony logowania z błędami
+    return render(request, 'login.html')  # Renderowanie strony logowania
 
 
+# Widok rejestracji
 def register(request):
+    """
+    Widok rejestracji nowego użytkownika. Umożliwia tworzenie nowych kont użytkowników.
+    Sprawdza poprawność danych rejestracyjnych i zapisuje użytkownika do bazy danych.
+    """
     if request.method == 'POST':
-        name = request.POST.get('name')
-        surname = request.POST.get('surname')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password2 = request.POST.get('password2')
+        name = request.POST.get('name')  # Pobranie imienia z formularza rejestracji
+        surname = request.POST.get('surname')  # Pobranie nazwiska z formularza rejestracji
+        email = request.POST.get('email')  # Pobranie adresu email z formularza rejestracji
+        password = request.POST.get('password')  # Pobranie hasła z formularza rejestracji
+        password2 = request.POST.get('password2')  # Pobranie potwierdzenia hasła z formularza rejestracji
 
         errors = {}
         if not name:
-            errors['name'] = ['Imię jest wymagane']
+            errors['name'] = ['Imię jest wymagane']  # Błąd braku imienia
         if not surname:
-            errors['surname'] = ['Nazwisko jest wymagane']
+            errors['surname'] = ['Nazwisko jest wymagane']  # Błąd braku nazwiska
         if not email:
-            errors['email'] = ['Email jest wymagany']
+            errors['email'] = ['Email jest wymagany']  # Błąd braku emaila
         if not password:
-            errors['password'] = ['Hasło jest wymagane']
+            errors['password'] = ['Hasło jest wymagane']  # Błąd braku hasła
         if password != password2:
-            errors['password2'] = ['Hasła nie są zgodne']
+            errors['password2'] = ['Hasła nie są zgodne']  # Błąd niezgodności haseł
         try:
-            validate_password(password)
+            validate_password(password)  # Walidacja hasła
         except ValidationError as e:
-            errors['password'] = list(e.messages)
+            errors['password'] = list(e.messages)  # Błędy walidacji hasła
         if User.objects.filter(username=email).exists():
-            errors['email'] = ['Email już istnieje']
+            errors['email'] = ['Email już istnieje']  # Błąd istnienia użytkownika z takim emailem
 
         if errors:
-            return render(request, 'register.html', {'errors': errors})
+            return render(request, 'register.html', {'errors': errors})  # Renderowanie strony rejestracji z błędami
         else:
             user = User.objects.create_user(username=email, password=password, first_name=name, last_name=surname,
                                             email=email)
-            user.is_active = False
+            user.is_active = False  # Ustawienie konta jako nieaktywne
             user.save()
 
             # Tworzenie tokenu weryfikacyjnego
@@ -178,11 +212,16 @@ def register(request):
             email.attach_alternative(message, "text/html")
             email.send()
 
-            return redirect('donations:login')
-    return render(request, 'register.html')
+            return redirect('donations:login')  # Przekierowanie na stronę logowania po rejestracji
+    return render(request, 'register.html')  # Renderowanie strony rejestracji
 
 
+# Widok aktywacji konta
 def activate(request, uidb64, token):
+    """
+    Widok aktywacji konta użytkownika za pomocą emaila weryfikacyjnego.
+    Weryfikuje token i aktywuje konto użytkownika.
+    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -190,40 +229,75 @@ def activate(request, uidb64, token):
         user = None
 
     if user is not None and EmailVerificationToken.objects.filter(user=user, token=token).exists():
-        user.is_active = True
+        user.is_active = True  # Aktywacja konta użytkownika
         user.save()
-        EmailVerificationToken.objects.filter(user=user).delete()
-        return redirect('donations:login')
+        EmailVerificationToken.objects.filter(user=user).delete()  # Usunięcie tokenu weryfikacyjnego
+        return redirect('donations:login')  # Przekierowanie na stronę logowania po aktywacji
     else:
-        return render(request, 'activation_invalid.html')
+        return render(request, 'activation_invalid.html')  # Renderowanie strony błędu aktywacji
 
 
+# Widok wylogowania
 def logout(request):
+    """
+    Widok wylogowania użytkownika. Wylogowuje użytkownika z sesji.
+    """
     auth_logout(request)
-    return redirect('donations:index')
+    return redirect('donations:index')  # Przekierowanie na stronę główną po wylogowaniu
 
 
+# Widok profilu użytkownika
 @login_required
 def user_profile(request):
+    """
+    Widok profilu użytkownika, wyświetlający dane użytkownika oraz listę jego darowizn.
+    Umożliwia filtrowanie i wyszukiwanie darowizn.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             donation_id = data.get('donation_id')
-            donation = Donation.objects.get(id=donation_id, user=request.user)
-            donation.is_taken = not donation.is_taken
+
+            donation = get_object_or_404(Donation, id=donation_id, user=request.user)
+
+            donation.is_taken_by_user = not donation.is_taken_by_user
             donation.save()
-            return JsonResponse({'status': 'success', 'is_taken': donation.is_taken})
-        except (Donation.DoesNotExist, KeyError, ValueError):
-            return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+            return JsonResponse({'status': 'success', 'is_taken_by_user': donation.is_taken_by_user})
+        except Donation.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Darowizna nie istnieje'}, status=400)
+        except KeyError:
+            return JsonResponse({'status': 'error', 'message': 'Nieprawidłowe dane żądania'}, status=400)
+        except ValueError as e:
+            return JsonResponse({'status': 'error', 'message': 'Nieprawidłowe żądanie'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': 'Wystąpił nieoczekiwany błąd'}, status=500)
 
-    donations_list = Donation.objects.filter(user=request.user).order_by('is_taken', 'pick_up_date', 'pick_up_time')
-    paginator = Paginator(donations_list, 8)  # Пагинация: 6 пожертвований на страницу
+    donations_list = Donation.objects.filter(user=request.user)
 
-    page_number = request.GET.get('page')
-    donations = paginator.get_page(page_number)
+    # Obsługa wyszukiwania i filtrowania
+    search_query = request.GET.get('search', '')  # Pobranie zapytania wyszukiwania z parametrów URL
+    filter_status = request.GET.get('status', '')  # Pobranie statusu filtra z parametrów URL
+
+    if search_query:
+        donations_list = donations_list.filter(
+            Q(institution__name__icontains=search_query) |
+            Q(categories__name__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(city__icontains=search_query)
+        ).distinct()  # Filtrowanie darowizn na podstawie zapytania wyszukiwania
+
+    if filter_status:
+        donations_list = donations_list.filter(status=filter_status)  # Filtrowanie darowizn na podstawie statusu
+
+    donations_list = donations_list.order_by('is_taken_by_user', 'pick_up_date', 'pick_up_time')  # Sortowanie darowizn
+
+    paginator = Paginator(donations_list, 8)  # Paginacja listy darowizn (8 na stronę)
+    page_number = request.GET.get('page')  # Pobranie numeru strony z parametrów URL
+    donations = paginator.get_page(page_number)  # Pobranie odpowiedniej strony darowizn
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render(request, 'user_profile.html', {'donations': donations})
+        return render(request, 'user_profile.html',
+                      {'donations': donations})  # Renderowanie strony profilu z danymi darowizn
 
     return render(request, 'user_profile.html', {
         'first_name': request.user.first_name,
@@ -232,225 +306,204 @@ def user_profile(request):
         'date_joined': request.user.date_joined,
         'last_login': request.user.last_login,
         'donations': donations,
-    })
+        'search_query': search_query,
+        'filter_status': filter_status,
+    })  # Renderowanie strony profilu z danymi użytkownika i darowizn
 
 
+# Widok edycji profilu
 @login_required
 def edit_profile(request):
+    """
+    Widok edycji profilu użytkownika, umożliwiający aktualizację danych osobowych.
+    """
     if request.method == 'POST':
         user = request.user
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        first_name = request.POST.get('first_name')  # Pobranie nowego imienia z formularza
+        last_name = request.POST.get('last_name')  # Pobranie nowego nazwiska z formularza
+        email = request.POST.get('email')  # Pobranie nowego emaila z formularza
+        password = request.POST.get('password')  # Pobranie hasła do potwierdzenia zmiany danych
 
-        if user.check_password(password):
+        if user.check_password(password):  # Sprawdzenie poprawności hasła
             user.first_name = first_name
             user.last_name = last_name
             user.email = email
-            user.save()
-            return redirect('donations:user_profile')
+            user.save()  # Zapisanie zmian w danych użytkownika
+            return redirect('donations:user_profile')  # Przekierowanie na stronę profilu użytkownika
         else:
-            return render(request, 'edit_profile.html', {'error': 'Incorrect password'})
+            return render(request, 'edit_profile.html',
+                          {'error': 'Incorrect password'})  # Renderowanie strony edycji profilu z błędem
 
-    return render(request, 'edit_profile.html')
+    return render(request, 'edit_profile.html')  # Renderowanie strony edycji profilu
 
 
+# Widok zmiany hasła
 @login_required
 def change_password(request):
+    """
+    Widok zmiany hasła użytkownika, umożliwiający aktualizację hasła.
+    """
     if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
+        form = PasswordChangeForm(request.user, request.POST)  # Formularz zmiany hasła
         if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            return redirect('donations:user_profile')
+            user = form.save()  # Zapisanie nowego hasła
+            update_session_auth_hash(request, user)  # Aktualizacja sesji użytkownika
+            return redirect('donations:user_profile')  # Przekierowanie na stronę profilu użytkownika
         else:
-            return render(request, 'change_password.html', {'form': form})
+            return render(request, 'change_password.html', {'form': form})  # Renderowanie strony zmiany hasła z błędami
     else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'change_password.html', {'form': form})
+        form = PasswordChangeForm(request.user)  # Inicjalizacja formularza zmiany hasła
+    return render(request, 'change_password.html', {'form': form})  # Renderowanie strony zmiany hasła
 
 
+# Widok resetowania hasła
 def password_reset_request(request):
+    """
+    Widok żądania resetowania hasła, umożliwiający użytkownikowi zainicjowanie procesu resetowania hasła.
+    Wysyła email z linkiem do resetowania hasła.
+    """
     if request.method == "POST":
+        # Pobranie adresu email z formularza
         email = request.POST.get('email')
+        # Sprawdzenie, czy użytkownik o podanym adresie email istnieje
         if User.objects.filter(email=email).exists():
+            # Pobranie użytkownika na podstawie adresu email
             user = User.objects.get(email=email)
+            # Utworzenie tokenu do resetowania hasła
             token = PasswordResetToken.objects.create(user=user)
 
-            # Send password reset email
+            # Pobranie bieżącej domeny
             current_site = get_current_site(request)
+            # Temat wiadomości email
             mail_subject = 'Reset your password'
+            # Renderowanie wiadomości email
             message = render_to_string('password_reset_email.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': token.token,
             })
+            # Treść wiadomości w formacie tekstowym
             plain_message = f"Cześć {user.first_name},\n\nProszę kliknij poniższy link, aby zresetować swoje hasło:\n\nhttp://{current_site.domain}{reverse('donations:password_reset_confirm', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token.token})}\n\nJeśli nie prosiłeś o zresetowanie hasła, zignoruj tę wiadomość."
 
+            # Utworzenie i wysłanie wiadomości email
             email = EmailMultiAlternatives(mail_subject, plain_message, settings.DEFAULT_FROM_EMAIL, [email])
             email.attach_alternative(message, "text/html")
             email.send()
 
-            return render(request, 'password_reset.html',
-                          {'message': 'Link do resetowania hasła został wysłany na Twój email.'})
+            # Powiadomienie użytkownika, że link do resetowania hasła został wysłany
+            return render(request, 'password_reset.html', {'message': 'Link do resetowania hasła został wysłany na Twój email.'})
         else:
+            # Powiadomienie użytkownika, że podany email nie został znaleziony
             return render(request, 'password_reset.html', {'message': 'Email nie został znaleziony.'})
+    # Renderowanie strony żądania resetowania hasła
     return render(request, 'password_reset.html')
 
 
+# Widok potwierdzenia resetu hasła
 def password_reset_confirm(request, uidb64=None, token=None):
+    """
+    Widok potwierdzenia resetu hasła, umożliwiający użytkownikowi ustawienie nowego hasła.
+    Weryfikuje token resetu hasła i zapisuje nowe hasło użytkownika.
+    """
     if request.method == 'POST':
+        # Pobranie nowego hasła z formularza
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
+        # Sprawdzenie, czy hasła są zgodne
         if password1 != password2:
             return render(request, 'password_reset_confirm.html', {'error': 'Hasła nie są zgodne'})
         try:
+            # Walidacja nowego hasła
             validate_password(password1)
         except ValidationError as e:
+            # Wyświetlenie błędów walidacji hasła
             return render(request, 'password_reset_confirm.html', {'error': list(e.messages)})
 
         try:
+            # Dekodowanie UID użytkownika
             uid = force_str(urlsafe_base64_decode(uidb64))
+            # Pobranie użytkownika na podstawie UID
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
-        if user is not None and EmailVerificationToken.objects.filter(user=user, token=token).exists():
+        # Sprawdzenie, czy użytkownik i token istnieją
+        if user is not None and PasswordResetToken.objects.filter(user=user, token=token).exists():
+            # Ustawienie nowego hasła
             user.set_password(password1)
             user.save()
-            EmailVerificationToken.objects.filter(user=user).delete()
+            # Usunięcie tokenu resetu hasła
+            PasswordResetToken.objects.filter(user=user).delete()
+            # Przekierowanie na stronę logowania po zmianie hasła
             return redirect('donations:login')
         else:
+            # Renderowanie strony błędu aktywacji
             return render(request, 'activation_invalid.html')
+    # Renderowanie strony potwierdzenia resetu hasła
     return render(request, 'password_reset_confirm.html')
 
 
-def analyze_data(request):
-    # Получаем фильтры из GET-запроса
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    category_id = request.GET.get('category')
-    institution_id = request.GET.get('institution')
-    user_id = request.GET.get('user')
 
-    # Фильтрация данных
-    donations = Donation.objects.all()
-
-    if start_date:
-        donations = donations.filter(created_at__gte=start_date)
-    if end_date:
-        donations = donations.filter(created_at__lte=end_date)
-    if category_id:
-        donations = donations.filter(categories__id=category_id)
-    if institution_id:
-        donations = donations.filter(institution__id=institution_id)
-    if user_id:
-        donations = donations.filter(user__id=user_id)
-
-    context = {
-        'section': 'analyze_data',
-        'charts': {
-            'donations_by_institution': generate_donations_chart(donations, 'institution', 'Instytucja',
-                                                                 'według instytucji'),
-            'donations_by_category': generate_donations_chart(donations, 'categories', 'Kategoria', 'według kategorii'),
-            'donations_over_time': generate_donations_over_time_chart(donations),
-            'donations_by_user': generate_donations_chart(donations, 'user', 'Użytkownik', 'według użytkownika')
-        },
-        'categories': Category.objects.all(),
-        'institutions': Institution.objects.all(),
-        'users': User.objects.all(),
-        'start_date': start_date,
-        'end_date': end_date,
-        'selected_category': category_id,
-        'selected_institution': institution_id,
-        'selected_user': user_id
-    }
-    return render(request, 'analyze_data.html', context)
-
-
-def generate_donations_chart(donations, filter_field, xlabel, title_suffix):
-    cache_key = f"donations_{filter_field}_{donations.query}"
-    image_base64 = cache.get(cache_key)
-    if not image_base64:
-        field_objects = {
-            'institution': Institution.objects.all(),
-            'categories': Category.objects.all(),
-            'user': User.objects.all()
-        }[filter_field]
-
-        donations_count = [donations.filter(**{filter_field: obj}).count() for obj in field_objects]
-        field_names = [getattr(obj, 'name', getattr(obj, 'username', '')) for obj in field_objects]
-
-        plt.figure(figsize=(10, 5))
-        plt.bar(field_names, donations_count)
-        plt.xlabel(xlabel)
-        plt.ylabel('Liczba darowizn')
-        plt.title(f'Liczba darowizn {title_suffix}')
-        plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-
-        buffer = BytesIO()
-        plt.savefig(buffer, format='png')
-        plt.close()
-        buffer.seek(0)
-
-        image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-        cache.set(cache_key, image_base64, timeout=60 * 15)  # кэшировать на 15 минут
-    return image_base64
-
-
-def generate_donations_over_time_chart(donations):
-    cache_key = f"donations_over_time_{donations.query}"
-    image_base64 = cache.get(cache_key)
-    if not image_base64:
-        dates = [donation.created_at.date() for donation in donations]
-        unique_dates = sorted(set(dates))
-        donations_per_day = [dates.count(date) for date in unique_dates]
-
-        plt.figure(figsize=(10, 5))
-        plt.plot(unique_dates, donations_per_day, marker='o')
-        plt.xlabel('Data')
-        plt.ylabel('Liczba darowizn')
-        plt.title('Liczba darowizn w czasie')
-        plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-
-        buffer = BytesIO()
-        plt.savefig(buffer, format='png')
-        plt.close()
-        buffer.seek(0)
-
-        image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-        cache.set(cache_key, image_base64, timeout=60 * 15)  # кэшировать на 15 минут
-    return image_base64
-
-
+# Widok kontaktowy
 def contact(request):
+    """
+    Widok kontaktowy, umożliwiający użytkownikom wysyłanie wiadomości kontaktowych do administratorów serwisu.
+    """
     if request.method == 'POST':
-        form = ContactForm(request.POST)
+        form = ContactForm(request.POST)  # Formularz kontaktowy
         if form.is_valid():
-            contact_message = form.save()
-            # Отправить email администраторам
+            contact_message = form.save()  # Zapisanie wiadomości kontaktowej
+            # Wysłanie emaila administratorom
             subject = f"Nowa wiadomość kontaktowa od {contact_message.name} {contact_message.surname}"
             message = f"Imię: {contact_message.name}\nNazwisko: {contact_message.surname}\nEmail: {contact_message.email}\n\nWiadomość:\n{contact_message.message}"
-            admin_emails = [user.email for user in User.objects.filter(is_superuser=True)]
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, admin_emails)
+            admin_emails = [user.email for user in
+                            User.objects.filter(is_superuser=True)]  # Pobranie emaili administratorów
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, admin_emails)  # Wysłanie emaila
             messages.success(request, 'Twoja wiadomość została wysłana. Dziękujemy za kontakt!')
-            return redirect('donations:index')
+            return redirect('donations:index')  # Przekierowanie na stronę główną po wysłaniu wiadomości
         else:
             for field, error_list in form.errors.items():
                 for error in error_list:
-                    messages.error(request, error)
+                    messages.error(request, error)  # Wyświetlenie błędów formularza
     else:
-        form = ContactForm()
-    return render(request, 'base.html', {'form': form})
+        form = ContactForm()  # Inicjalizacja formularza kontaktowego
+    return render(request, 'base.html', {'form': form})  # Renderowanie strony kontaktowej
 
 
+# Widok polityki prywatności
 def privacy_policy(request):
-    return render(request, 'privacy_policy.html')
+    """
+    Widok polityki prywatności, wyświetlający zasady ochrony danych osobowych.
+    """
+    return render(request, 'privacy_policy.html')  # Renderowanie strony polityki prywatności
 
 
+# Widok warunków korzystania z usługi
 def terms_of_service(request):
-    return render(request, 'terms_of_service.html')
+    """
+    Widok warunków korzystania z usługi, wyświetlający zasady korzystania z serwisu.
+    """
+    return render(request, 'terms_of_service.html')  # Renderowanie strony warunków korzystania z usługi
+
+
+# Widok zgłaszania problemów
+@login_required
+def report_problem(request):
+    """
+    Widok zgłaszania problemów, umożliwiający użytkownikom zgłaszanie problemów z serwisem.
+    """
+    if request.method == 'POST':
+        form = ProblemReportForm(request.POST, request.FILES)  # Formularz zgłaszania problemów
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.user = request.user  # Przypisanie zgłoszenia do zalogowanego użytkownika
+            report.save()
+            messages.success(request, 'Your problem report has been submitted successfully.')
+            return redirect(
+                'donations:user_profile')  # Przekierowanie na stronę profilu użytkownika po zgłoszeniu problemu
+        else:
+            messages.error(request, 'There was an error with your submission.')  # Wyświetlenie błędów formularza
+    else:
+        form = ProblemReportForm()  # Inicjalizacja formularza zgłaszania problemów
+    return render(request, 'report_problem.html', {'form': form})  # Renderowanie strony zgłaszania problemów

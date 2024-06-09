@@ -1,356 +1,175 @@
 document.addEventListener("DOMContentLoaded", function() {
-  /**
-   * HomePage - Help section
-   */
-  class Help {
-    constructor($el) {
-      this.$el = $el;
-      this.$buttonsContainer = $el.querySelector(".help--buttons");
-      this.$slidesContainers = $el.querySelectorAll(".help--slides");
-      this.currentSlide = this.$buttonsContainer.querySelector(".active").parentElement.dataset.id;
-      this.init();
-    }
-
-    init() {
-      this.events();
-    }
-
-    events() {
-      /**
-       * Slide buttons
-       */
-      this.$buttonsContainer.addEventListener("click", e => {
-        if (e.target.classList.contains("btn")) {
-          this.changeSlide(e);
-        }
-      });
-
-      /**
-       * Pagination buttons
-       */
-      this.$el.addEventListener("click", e => {
-        if (e.target.classList.contains("btn") && e.target.parentElement.parentElement.classList.contains("help--slides-pagination")) {
-          this.changePage(e);
-        }
-      });
-    }
-
-    changeSlide(e) {
-      e.preventDefault();
-      const $btn = e.target;
-
-      // Buttons Active class change
-      [...this.$buttonsContainer.children].forEach(btn => btn.firstElementChild.classList.remove("active"));
-      $btn.classList.add("active");
-
-      // Current slide
-      this.currentSlide = $btn.parentElement.dataset.id;
-
-      // Slides active class change
-      this.$slidesContainers.forEach(el => {
-        el.classList.remove("active");
-
-        if (el.dataset.id === this.currentSlide) {
-          el.classList.add("active");
-        }
-      });
-    }
-
-    /**
-     * TODO: callback to page change event
-     */
-    changePage(e) {
-      e.preventDefault();
-      const page = e.target.dataset.page;
-
-      console.log(page);
-    }
-  }
-  const helpSection = document.querySelector(".help");
-  if (helpSection !== null) {
-    new Help(helpSection);
-  }
-
-  /**
-   * Form Select
-   */
-  class FormSelect {
-    constructor($el) {
-      this.$el = $el;
-      this.options = [...$el.children];
-      this.init();
-    }
-
-    init() {
-      this.createElements();
-      this.addEvents();
-      this.$el.parentElement.removeChild(this.$el);
-    }
-
-    createElements() {
-      // Input for value
-      this.valueInput = document.createElement("input");
-      this.valueInput.type = "text";
-      this.valueInput.name = this.$el.name;
-
-      // Dropdown container
-      this.dropdown = document.createElement("div");
-      this.dropdown.classList.add("dropdown");
-
-      // List container
-      this.ul = document.createElement("ul");
-
-      // All list options
-      this.options.forEach((el, i) => {
-        const li = document.createElement("li");
-        li.dataset.value = el.value;
-        li.innerText = el.innerText;
-
-        if (i === 0) {
-          // First clickable option
-          this.current = document.createElement("div");
-          this.current.innerText = el.innerText;
-          this.dropdown.appendChild(this.current);
-          this.valueInput.value = el.value;
-          li.classList.add("selected");
-        }
-
-        this.ul.appendChild(li);
-      });
-
-      this.dropdown.appendChild(this.ul);
-      this.dropdown.appendChild(this.valueInput);
-      this.$el.parentElement.appendChild(this.dropdown);
-    }
-
-    addEvents() {
-      this.dropdown.addEventListener("click", e => {
-        const target = e.target;
-        this.dropdown.classList.toggle("selecting");
-
-        // Save new value only when clicked on li
-        if (target.tagName === "LI") {
-          this.valueInput.value = target.dataset.value;
-          this.current.innerText = target.innerText;
-        }
-      });
-    }
-  }
-  document.querySelectorAll(".form-group--dropdown select").forEach(el => {
-    new FormSelect(el);
-  });
-
-  /**
-   * Hide elements when clicked on document
-   */
-  document.addEventListener("click", function(e) {
-    const target = e.target;
-    const tagName = target.tagName;
-
-    if (target.classList.contains("dropdown")) return false;
-
-    if (tagName === "LI" && target.parentElement.parentElement.classList.contains("dropdown")) {
-      return false;
-    }
-
-    if (tagName === "DIV" && target.parentElement.classList.contains("dropdown")) {
-      return false;
-    }
-
-    document.querySelectorAll(".form-group--dropdown .dropdown").forEach(el => {
-      el.classList.remove("selecting");
-    });
-  });
-
-  /**
-   * Switching between form steps
-   */
+  // Klasa obsługująca kroki formularza
   class FormSteps {
     constructor(form) {
-      this.$form = form;
-      this.$next = form.querySelectorAll(".next-step");
-      this.$prev = form.querySelectorAll(".prev-step");
-      this.$step = form.querySelector(".form--steps-counter span");
-      this.currentStep = 1;
+      this.$form = form;  // Formularz
+      this.$next = form.querySelectorAll(".next-step");  // Przyciski "następny krok"
+      this.$prev = form.querySelectorAll(".prev-step");  // Przyciski "poprzedni krok"
+      this.$step = form.querySelector(".form--steps-counter span");  // Licznik kroków
+      this.currentStep = 1;  // Bieżący krok
 
-      this.$stepInstructions = form.querySelectorAll(".form--steps-instructions p");
-      const $stepForms = form.querySelectorAll("form > div");
-      this.slides = [...this.$stepInstructions, ...$stepForms];
+      this.$stepInstructions = form.querySelectorAll(".form--steps-instructions p");  // Instrukcje dla kroków
+      const $stepForms = form.querySelectorAll("form > div");  // Wszystkie sekcje formularza
+      this.slides = [...this.$stepInstructions, ...$stepForms];  // Łączenie instrukcji z sekcjami formularza
 
-      this.init();
+      this.init();  // Inicjalizacja klasy
     }
 
-    /**
-     * Init all methods
-     */
+    // Inicjalizacja zdarzeń i aktualizacja formularza
     init() {
-      this.events();
-      this.updateForm();
+      this.events();  // Ustawienie zdarzeń
+      this.updateForm();  // Aktualizacja formularza
     }
 
-    /**
-     * All events that are happening in form
-     */
+    // Ustawienie nasłuchiwania zdarzeń
     events() {
-      // Next step
+      // Zdarzenia dla przycisków "następny krok"
       this.$next.forEach(btn => {
         btn.addEventListener("click", e => {
-          e.preventDefault();
-          this.currentStep++;
-          this.updateForm();
+          e.preventDefault();  // Zatrzymanie domyślnego działania przycisku
+          if (this.validateStep()) {  // Walidacja bieżącego kroku
+            this.currentStep++;  // Przejście do następnego kroku
+            this.updateForm();  // Aktualizacja formularza
+          }
         });
       });
 
-      // Previous step
+      // Zdarzenia dla przycisków "poprzedni krok"
       this.$prev.forEach(btn => {
         btn.addEventListener("click", e => {
-          e.preventDefault();
-          this.currentStep--;
-          this.updateForm();
+          e.preventDefault();  // Zatrzymanie domyślnego działania przycisku
+          if (this.currentStep > 1) {  // Sprawdzenie, czy nie jest to pierwszy krok
+            this.currentStep--;  // Powrót do poprzedniego kroku
+            this.updateForm();  // Aktualizacja formularza
+          }
         });
       });
 
-      // Form submit
+      // Zdarzenie dla przesyłania formularza
       this.$form.querySelector("form").addEventListener("submit", e => this.submit(e));
 
-      // Filter institutions by selected categories
+      // Zdarzenia dla zmiany checkboxów kategorii
       document.querySelectorAll('.category-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', () => {
-          this.filterInstitutions();
+          this.filterInstitutions();  // Filtrowanie instytucji
         });
       });
     }
 
-    updateForm() {
-      this.$step.innerText = this.currentStep;
+    // Walidacja bieżącego kroku formularza
+    validateStep() {
+      if (this.currentStep === 4) {  // Walidacja dla kroku 4
+        const phoneInput = document.querySelector('input[name="phone"]');  // Pole numeru telefonu
+        const phoneValue = phoneInput ? phoneInput.value : '';  // Wartość numeru telefonu
+        const phoneRegex = /^\+?1?\d{9,15}$/;  // Wyrażenie regularne dla walidacji numeru telefonu
+        if (!phoneRegex.test(phoneValue)) {  // Sprawdzenie, czy numer telefonu jest poprawny
+          alert("Podaj prawidłowy numer telefonu w formacie: '+999999999'. Do 15 cyfr.");  // Alert o błędzie
+          return false;
+        }
+      }
+      return true;  // Walidacja zakończona pomyślnie
+    }
 
-      // TODO: Validation
+    // Aktualizacja formularza
+    updateForm() {
+      if (this.$step) {
+        this.$step.innerText = this.currentStep;  // Aktualizacja licznika kroków
+      }
 
       this.slides.forEach(slide => {
-        slide.classList.remove("active");
+        slide.classList.remove("active");  // Usuwanie klasy "active" z każdego slajdu
 
-        if (slide.dataset.step === this.currentStep) {
-          slide.classList.add("active");
+        if (parseInt(slide.dataset.step) === this.currentStep) {  // Sprawdzenie, czy krok się zgadza
+          slide.classList.add("active");  // Dodanie klasy "active" do bieżącego slajdu
         }
       });
 
-      this.$stepInstructions[0].parentElement.parentElement.hidden = this.currentStep >= 6;
-      this.$step.parentElement.hidden = this.currentStep >= 6;
+      const stepInstructionsContainer = this.$stepInstructions[0]?.parentElement?.parentElement;  // Kontener instrukcji kroków
+      if (stepInstructionsContainer) {
+        stepInstructionsContainer.hidden = this.currentStep >= 6;  // Ukrywanie instrukcji po kroku 6
+      }
 
-      // TODO: get data from inputs and show them in summary
+      if (this.$step) {
+        this.$step.parentElement.hidden = this.currentStep >= 6;  // Ukrywanie licznika kroków po kroku 6
+      }
+
       if (this.currentStep === 5) {
-        this.showSummary();
+        this.showSummary();  // Pokazywanie podsumowania na kroku 5
       }
     }
 
+    // Filtrowanie instytucji na podstawie zaznaczonych kategorii
     filterInstitutions() {
-      const selectedCategories = [...document.querySelectorAll('.category-checkbox:checked')].map(cb => parseInt(cb.value));
-      console.log("Selected categories:", selectedCategories); // Debugging line
+      const selectedCategories = [...document.querySelectorAll('.category-checkbox:checked')].map(cb => parseInt(cb.value));  // Pobieranie zaznaczonych kategorii
       document.querySelectorAll('.institution').forEach(inst => {
-        const instCategories = inst.dataset.categories ? inst.dataset.categories.split(',').map(Number) : [];
-        console.log("Institution categories:", instCategories); // Debugging line
-        const match = selectedCategories.every(cat => instCategories.includes(cat));
-        inst.style.display = match ? 'block' : 'none';
-        console.log(`Institution ${inst.dataset.categories} ${match ? "matches" : "does not match"}`); // Debugging line
+        const instCategories = inst.dataset.categories ? inst.dataset.categories.split(',').map(Number) : [];  // Pobieranie kategorii instytucji
+        const match = selectedCategories.every(cat => instCategories.includes(cat));  // Sprawdzanie dopasowania kategorii
+        inst.style.display = match ? 'block' : 'none';  // Wyświetlanie lub ukrywanie instytucji
       });
     }
 
+    // Pokazywanie podsumowania
     showSummary() {
-      [...document.querySelectorAll('.category-checkbox:checked')].map(cb => cb.nextElementSibling.innerText).join(', ');
-      const selectedInstitutionElement = document.querySelector('input[name="organization"]:checked');
-      const selectedInstitution = selectedInstitutionElement ? selectedInstitutionElement.nextElementSibling.querySelector('.title').innerText : '';
+      const selectedInstitutionElement = document.querySelector('input[name="organization"]:checked');  // Zaznaczona organizacja
+      const selectedInstitution = selectedInstitutionElement ? selectedInstitutionElement.nextElementSibling.querySelector('.title')?.innerText : '';  // Nazwa zaznaczonej organizacji
 
+      // Elementy podsumowania
       const summaryItems = [
-        { selector: '.summary .icon-bag + .summary--text', text: `${document.querySelector('input[name="bags"]').value} worki ubrań` },
+        { selector: '.summary .icon-bag + .summary--text', text: `${document.querySelector('input[name="bags"]')?.value} worki ubrań` },
         { selector: '.summary .icon-hand + .summary--text', text: `Dla fundacji ${selectedInstitution}` },
-        { selector: '.summary .address', text: document.querySelector('input[name="address"]').value },
-        { selector: '.summary .city', text: document.querySelector('input[name="city"]').value },
-        { selector: '.summary .postcode', text: document.querySelector('input[name="postcode"]').value },
-        { selector: '.summary .phone', text: document.querySelector('input[name="phone"]').value },
-        { selector: '.summary .date', text: document.querySelector('input[name="date"]').value },
-        { selector: '.summary .time', text: document.querySelector('input[name="time"]').value },
-        { selector: '.summary .more_info', text: document.querySelector('textarea[name="more_info"]').value || 'Brak uwag' }
+        { selector: '.summary .address', text: document.querySelector('input[name="address"]')?.value },
+        { selector: '.summary .city', text: document.querySelector('input[name="city"]')?.value },
+        { selector: '.summary .postcode', text: document.querySelector('input[name="postcode"]')?.value },
+        { selector: '.summary .phone', text: document.querySelector('input[name="phone"]')?.value },
+        { selector: '.summary .date', text: document.querySelector('input[name="date"]')?.value },
+        { selector: '.summary .time', text: document.querySelector('input[name="time"]')?.value },
+        { selector: '.summary .more_info', text: document.querySelector('textarea[name="more_info"]')?.value || 'Brak uwag' }
       ];
 
       summaryItems.forEach(item => {
-        const element = document.querySelector(item.selector);
+        const element = document.querySelector(item.selector);  // Znajdowanie elementu w podsumowaniu
         if (element) {
-          element.innerText = item.text;
+          element.innerText = item.text;  // Ustawianie tekstu podsumowania
+        } else {
+          console.warn(`Element ${item.selector} nie istnieje na stronie`);  // Ostrzeżenie, jeśli element nie istnieje
         }
       });
     }
 
-    submit(e) {
-      e.preventDefault();
-      this.currentStep++;
-      this.updateForm();
-      if (this.currentStep > 5) {
-        this.$form.querySelector('form').submit();
+    // Obsługa przesyłania formularza
+    async submit(e) {
+      e.preventDefault();  // Zatrzymanie domyślnego działania formularza
+      if (this.currentStep < 5) {
+        this.currentStep++;  // Przejście do następnego kroku, jeśli bieżący krok jest mniejszy niż 5
+        this.updateForm();  // Aktualizacja formularza
+      } else {
+        const formData = new FormData(this.$form.querySelector('form'));  // Pobieranie danych z formularza
+
+        try {
+          const response = await fetch(this.$form.querySelector('form').action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,  // Dodanie tokenu CSRF
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');  // Rzucenie błędu w przypadku problemu z siecią
+          }
+
+          window.location.href = '/form_success';  // Przekierowanie po pomyślnym przesłaniu formularza
+        } catch (error) {
+          console.error('Wystąpił problem z operacją fetch:', error);  // Logowanie błędu
+          alert('Wystąpił błąd podczas przesyłania formularza. Spróbuj ponownie.');  // Alert o błędzie
+        }
       }
     }
   }
+
+  // Inicjalizacja klasy FormSteps, jeśli formularz istnieje na stronie
   const form = document.querySelector(".form--steps");
-  if (form !== null) {
+  if (form) {
     new FormSteps(form);
   }
-});
-
-
-document.addEventListener('DOMContentLoaded', function () {
-  const tabButtons = document.querySelectorAll('.help--buttons a');
-  const tabs = document.querySelectorAll('.help--slides');
-  let activeTab = sessionStorage.getItem('activeTab') || 'foundations';
-
-  function showTab(target) {
-    tabs.forEach(tab => {
-      if (tab.dataset.id === target) {
-        tab.classList.add('active');
-      } else {
-        tab.classList.remove('active');
-      }
-    });
-    tabButtons.forEach(btn => {
-      if (btn.dataset.target === target) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-  }
-
-  showTab(activeTab);
-
-  tabButtons.forEach(button => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      const target = event.target.dataset.target;
-      sessionStorage.setItem('activeTab', target);
-      showTab(target);
-      activeTab = target; // обновление активной вкладки
-    });
-  });
-
-  const paginationLinks = document.querySelectorAll('.pagination a');
-  paginationLinks.forEach(link => {
-    link.addEventListener('click', (event) => {
-      const url = new URL(event.target.href);
-      url.searchParams.set('activeTab', activeTab);
-      event.target.href = url.toString();
-    });
-  });
-});
-
-
-// static/js/app.js
-document.addEventListener("DOMContentLoaded", function() {
-    // Show dropdown menu on hover
-    const dropdown = document.querySelector('.dropdown');
-    if (dropdown) {
-        dropdown.addEventListener('mouseenter', () => {
-            dropdown.querySelector('.dropdown-content').style.display = 'block';
-        });
-        dropdown.addEventListener('mouseleave', () => {
-            dropdown.querySelector('.dropdown-content').style.display = 'none';
-        });
-    }
 });

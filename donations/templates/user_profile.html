@@ -23,6 +23,24 @@
 <div class="content-container">
     <div class="content-card">
         <h3>Lista przekazanych darów</h3>
+
+        <form method="get" action="{% url 'donations:user_profile' %}">
+            <div class="search-filter-container">
+                <label class="search-label">
+                    <input type="text" name="search" placeholder="Szukaj..." value="{{ search_query }}" class="search-input">
+                </label>
+                <label class="filter-label">
+                    <select name="status" class="filter-select">
+                        <option value="">Wszystkie statusy</option>
+                        <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>Oczekujące</option>
+                        <option value="in_progress" {% if filter_status == 'in_progress' %}selected{% endif %}>W trakcie realizacji</option>
+                        <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Zrealizowane</option>
+                    </select>
+                </label>
+                <button type="submit" class="filter-button">Filtruj</button>
+            </div>
+        </form>
+
         <div id="donations-table-container">
             <table class="donations-table">
                 <thead>
@@ -31,12 +49,13 @@
                         <th>Organizacja</th>
                         <th>Kategorie</th>
                         <th>Data odbioru</th>
-                        <th>Archiwizacja</th>
+                        <th>Status</th>
+                        <th>Archiwizacja przez użytkownika</th>
                     </tr>
                 </thead>
                 <tbody id="donations-list">
                     {% for donation in donations %}
-                    <tr class="donation-row {% if donation.is_taken %}archived{% endif %}" data-donation-id="{{ donation.id }}">
+                    <tr class="donation-row {% if donation.is_taken_by_user %}archived{% endif %}" data-donation-id="{{ donation.id }}">
                         <td>{{ donation.quantity }}</td>
                         <td>{{ donation.institution.name }}</td>
                         <td>
@@ -45,15 +64,16 @@
                             {% endfor %}
                         </td>
                         <td>{{ donation.pick_up_date|date:"d M Y" }} {{ donation.pick_up_time|time:"H:i" }}</td>
+                        <td>{{ donation.get_status_display }}</td>
                         <td>
-                            <button type="button" class="btn-archive" onclick="toggleArchive({{ donation.id }})">
-                                {% if donation.is_taken %}Oznacz jako niezabrane{% else %}Oznacz jako zabrane{% endif %}
+                            <button type="button" class="btn-archive-user" onclick="toggleArchive({{ donation.id }}, 'user')">
+                                {% if donation.is_taken_by_user %}Oznacz jako niezabrane{% else %}Oznacz jako zabrane{% endif %}
                             </button>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5">Brak przekazanych darów</td>
+                        <td colspan="6">Brak przekazanych darów</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -79,78 +99,6 @@
     </div>
 </div>
 
-<script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function toggleArchive(donationId) {
-    const csrftoken = getCookie('csrftoken');
-
-    fetch("{% url 'donations:user_profile' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
-        body: JSON.stringify({ donation_id: donationId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            const row = document.querySelector(`.donation-row[data-donation-id='${donationId}']`);
-            row.classList.toggle('archived');
-            const button = row.querySelector('.btn-archive');
-            if (data.is_taken) {
-                button.textContent = 'Oznacz jako niezabrane';
-            } else {
-                button.textContent = 'Oznacz jako zabrane';
-            }
-        }
-    });
-}
-
-function setupPaginationLinks() {
-    document.querySelectorAll('.pagination-link').forEach(link => {
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            const url = event.target.href;
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newTableContainer = doc.querySelector('#donations-table-container');
-                if (newTableContainer) {
-                    document.querySelector('#donations-table-container').innerHTML = newTableContainer.innerHTML;
-                    setupPaginationLinks();
-                    window.scrollTo({
-                        top: document.querySelector('#donations-table-container').offsetTop,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    setupPaginationLinks();
-});
-</script>
 {% endblock %}
+
+

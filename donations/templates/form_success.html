@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmation{% endblock %}
+
+{% block header %}
+<div class="container-fluid custom-form-confirmation">
+    <div class="row justify-content-end">
+        <div class="col-md-8">
+            <div class="custom-card">
+                <h2>
+                    Dziękujemy za przesłanie formularza. Na maila prześlemy wszelkie
+                    informacje o odbiorze.
+                </h2>
+                <section class="form-confirmation">
+                    <div class="text-content">
+                        <h3>Twoja darowizna została pomyślnie zarejestrowana!</h3>
+                        <p>Na maila prześlemy wszelkie informacje o odbiorze.</p>
+                        <a href="{% url 'donations:index' %}" class="btn btn-primary">Powrót na stronę główną</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% endblock %}
