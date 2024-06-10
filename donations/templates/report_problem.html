@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<div class="container mt-5" id="report-problem">
+    <div class="row justify-content-end">
+        <div class="col-md-8">
+            <div class="card text-end shadow-lg p-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Zgłoś problem</h2>
+                    <p class="card-text mb-4">
+                        Tutaj możesz zgłosić swój problem i uzyskać pomoc od naszego działu obsługi klienta.
+                    </p>
+                    <button class="btn btn-primary btn-lg" onclick="scrollToContent()">Przejdź do formularza</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function scrollToContent() {
+        document.getElementById('content').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" id="content">
+    <h2 class="mb-4 text-center">Formularz zgłoszeniowy</h2>
+    <form id="problemReportForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card bg-light shadow-sm">
+                    <div class="card-body">
+                        <label for="topic" class="form-label">Temat <i class="bi bi-exclamation-circle"></i></label>
+                        {{ form.topic }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card bg-light shadow-sm">
+                    <div class="card-body">
+                        <label for="message" class="form-label">Wiadomość <i class="bi bi-chat-dots"></i></label>
+                        {{ form.message }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card bg-light shadow-sm">
+                    <div class="card-body">
+                        <label for="browser_info" class="form-label">Informacje o przeglądarce <i class="bi bi-browser-chrome"></i></label>
+                        {{ form.browser_info }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card bg-light shadow-sm">
+                    <div class="card-body">
+                        <label for="operating_system" class="form-label">System operacyjny <i class="bi bi-windows"></i></label>
+                        {{ form.operating_system }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card bg-light shadow-sm">
+                    <div class="card-body">
+                        <label for="steps_to_reproduce" class="form-label">Kroki do odtworzenia <i class="bi bi-list-check"></i></label>
+                        {{ form.steps_to_reproduce }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card bg-light shadow-sm">
+                    <div class="card-body">
+                        <label for="screenshot" class="form-label">Zrzut ekranu <i class="bi bi-image"></i></label>
+                        {{ form.screenshot }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Wyślij <i class="bi bi-send"></i></button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

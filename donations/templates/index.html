@@ -1,0 +1,196 @@
+<!-- donations/templates/index.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+{% block header %}
+<div class="slogan container container--90">
+  <div class="slogan--item">
+    <h1>
+      Zacznij pomagać!<br>
+      Oddaj niechciane rzeczy w zaufane ręce
+    </h1>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="stats" class="stats">
+  <div class="container container--85">
+    <div class="stats--item">
+      <em>{{ total_bags }}</em>
+      <h3>Oddanych worków</h3>
+      <p>Każdy worek przekazany do nas pomaga potrzebującym i wspiera zrównoważony rozwój. Dziękujemy za Twoje wsparcie!</p>
+    </div>
+    <div class="stats--item">
+      <em>{{ supported_institutions }}</em>
+      <h3>Wspartych organizacji</h3>
+      <p>Współpracujemy z licznymi organizacjami charytatywnymi, aby Twoje darowizny trafiły tam, gdzie są najbardziej potrzebne.</p>
+    </div>
+  </div>
+</section>
+
+<section id="steps" class="steps">
+  <h2>Wystarczą 4 proste kroki</h2>
+  <div class="steps--container">
+    <div class="steps--item">
+      <span class="icon icon--hands"></span>
+      <h3>Wybierz rzeczy</h3>
+      <p>ubrania, zabawki, sprzęt i inne</p>
+    </div>
+    <div class="steps--item">
+      <span class="icon icon--arrow"></span>
+      <h3>Spakuj je</h3>
+      <p>skorzystaj z worków na śmieci</p>
+    </div>
+    <div class="steps--item">
+      <span class="icon icon--glasses"></span>
+      <h3>Zdecyduj komu chcesz pomóc</h3>
+      <p>wybierz zaufane miejsce</p>
+    </div>
+    <div class="steps--item">
+      <span class="icon icon--courier"></span>
+      <h3>Zamów kuriera</h3>
+      <p>kurier przyjedzie w dogodnym terminie</p>
+    </div>
+  </div>
+  <a href="{% url 'donations:register' %}" class="btn btn--large">Załóż konto</a>
+</section>
+
+<section id="about-us" class="about-us">
+  <div class="about-us--text">
+    <h2>O nas</h2>
+    <p>Jesteśmy organizacją non-profit, która ułatwia darowanie niechcianych rzeczy. Nasza misja to wspieranie potrzebujących i promowanie zrównoważonego stylu życia.</p>
+    <img src="{% static 'images/signature.svg' %}" class="about-us--text-signature" alt="Signature">
+  </div>
+  <div class="about-us--image">
+    <img src="{% static 'images/about-us.jpg' %}" alt="People in circle">
+  </div>
+</section>
+
+<section id="help" class="help">
+  <h2>Komu pomagamy?</h2>
+  <ul class="help--buttons">
+    <li data-id="foundations"><a href="#help" class="btn btn--without-border active" data-target="foundations">Fundacjom</a></li>
+    <li data-id="ngos"><a href="#help" class="btn btn--without-border" data-target="ngos">Organizacjom pozarządowym</a></li>
+    <li data-id="local_collections"><a href="#help" class="btn btn--without-border" data-target="local_collections">Lokalnym zbiórkom</a></li>
+  </ul>
+
+  <!-- SLIDE 1 -->
+  <div class="help--slides active" data-id="foundations">
+    <p>W naszej bazie znajdziesz listę zweryfikowanych Fundacji, z którymi współpracujemy. Możesz sprawdzić czym się zajmują, komu pomagają i czego potrzebują.</p>
+    <ul class="help--slides-items">
+      {% for institution in page_obj_foundations %}
+      <li>
+        <div class="col">
+          <div class="title">{{ institution.name }}</div>
+          <div class="subtitle">{{ institution.description }}</div>
+        </div>
+        <div class="col">
+          <div class="text">
+            {% for category in institution.categories.all %}
+            {{ category.name }},
+            {% endfor %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj_foundations.has_previous %}
+          <a href="?page_foundations=1#help" data-target="foundations">&laquo; pierwsza</a>
+          <a href="?page_foundations={{ page_obj_foundations.previous_page_number }}#help" data-target="foundations">poprzednia</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ page_obj_foundations.number }} of {{ page_obj_foundations.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj_foundations.has_next %}
+          <a href="?page_foundations={{ page_obj_foundations.next_page_number }}#help" data-target="foundations">następna</a>
+          <a href="?page_foundations={{ page_obj_foundations.paginator.num_pages }}#help" data-target="foundations">ostatnia &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="help--slides" data-id="ngos">
+    <p>Organizacje pozarządowe, które wspieramy, działają na rzecz różnych grup społecznych, oferując pomoc tam, gdzie jest ona najbardziej potrzebna. Poznaj ich działalność i dowiedz się, jak możesz się zaangażować.</p>
+    <ul class="help--slides-items">
+      {% for institution in page_obj_ngos %}
+      <li>
+        <div class="col">
+          <div class="title">{{ institution.name }}</div>
+          <div class="subtitle">{{ institution.description }}</div>
+        </div>
+        <div class="col">
+          <div class="text">
+            {% for category in institution.categories.all %}
+            {{ category.name }},
+            {% endfor %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj_ngos.has_previous %}
+          <a href="?page_ngos=1#help" data-target="ngos">&laquo; pierwsza</a>
+          <a href="?page_ngos={{ page_obj_ngos.previous_page_number }}#help" data-target="ngos">poprzednia</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ page_obj_ngos.number }} of {{ page_obj_ngos.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj_ngos.has_next %}
+          <a href="?page_ngos={{ page_obj_ngos.next_page_number }}#help" data-target="ngos">następna</a>
+          <a href="?page_ngos={{ page_obj_ngos.paginator.num_pages }}#help" data-target="ngos">ostatnia &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 -->
+  <div class="help--slides" data-id="local_collections">
+    <p>Lokalne zbiórki organizowane przez nas i naszych partnerów mają na celu wsparcie społeczności w Twojej okolicy. Dowiedz się, jak możesz pomóc swoim sąsiadom i lokalnym organizacjom.</p>
+    <ul class="help--slides-items">
+      {% for institution in page_obj_local_collections %}
+      <li>
+        <div class="col">
+          <div class="title">{{ institution.name }}</div>
+          <div class="subtitle">{{ institution.description }}</div>
+        </div>
+        <div class="col">
+          <div class="text">
+            {% for category in institution.categories.all %}
+            {{ category.name }},
+            {% endfor %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj_local_collections.has_previous %}
+          <a href="?page_local_collections=1#help" data-target="local_collections">&laquo; pierwsza</a>
+          <a href="?page_local_collections={{ page_obj_local_collections.previous_page_number }}#help" data-target="local_collections">poprzednia</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ page_obj_local_collections.number }} of {{ page_obj_local_collections.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj_local_collections.has_next %}
+          <a href="?page_local_collections={{ page_obj_local_collections.next_page_number }}#help" data-target="local_collections">następna</a>
+          <a href="?page_local_collections={{ page_obj_local_collections.paginator.num_pages }}#help" data-target="local_collections">ostatnia &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+</section>
+{% endblock %}

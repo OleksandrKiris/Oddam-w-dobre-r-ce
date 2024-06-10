@@ -1,0 +1,14 @@
+<!-- templates/email_verification.html -->
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <title>Aktywuj swoje konto</title>
+</head>
+<body>
+    <p>Cześć {{ user.first_name }},</p>
+    <p>Dziękujemy za zarejestrowanie się na naszej stronie. Proszę kliknij poniższy link, aby aktywować swoje konto:</p>
+    <p><a href="http://{{ domain }}{% url 'donations:activate' uidb64=uidb64 token=token %}">Aktywuj swoje konto</a></p>
+    <p>Jeśli nie rejestrowałeś się na naszej stronie, zignoruj tę wiadomość.</p>
+</body>
+</html>

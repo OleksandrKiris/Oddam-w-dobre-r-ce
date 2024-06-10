@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+
+{% block header %}
+<div class="custom-header">
+  <div class="custom-form-container">
+    <h2>Załóż konto</h2>
+    <form id="registerForm" method="POST" action="{% url 'donations:register' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>
+            <input type="text" name="name" placeholder="Imię" required>
+        </label>
+        {% if errors.name %}
+        <span class="error-message">
+          {% for error in errors.name %}
+            {{ error }}
+          {% endfor %}
+        </span>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label>
+            <input type="text" name="surname" placeholder="Nazwisko" required>
+        </label>
+        {% if errors.surname %}
+        <span class="error-message">
+          {% for error in errors.surname %}
+            {{ error }}
+          {% endfor %}
+        </span>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label>
+            <input type="email" name="email" placeholder="Email" required>
+        </label>
+        {% if errors.email %}
+        <span class="error-message">
+          {% for error in errors.email %}
+            {{ error }}
+          {% endfor %}
+        </span>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label>
+            <input type="password" name="password" placeholder="Hasło" required>
+        </label>
+        {% if errors.password %}
+        <span class="error-message">
+          {% for error in errors.password %}
+            {{ error }}
+          {% endfor %}
+        </span>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label>
+            <input type="password" name="password2" placeholder="Powtórz hasło" required>
+        </label>
+        {% if errors.password2 %}
+        <span class="error-message">
+          {% for error in errors.password2 %}
+            {{ error }}
+          {% endfor %}
+        </span>
+        {% endif %}
+      </div>
+      <div class="form-group form-group--buttons">
+        <a href="{% url 'donations:login' %}" class="btn btn--without-border">Zaloguj się</a>
+        <button class="btn" type="submit">Załóż konto</button>
+      </div>
+    </form>
+    {% if errors %}
+    <div class="error-message">
+      <ul>
+        {% for error_list in errors.values %}
+          {% for error in error_list %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div id="registerSuccessMessage">Registration successful!</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}{% endblock %}

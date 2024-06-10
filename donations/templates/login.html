@@ -1,0 +1,40 @@
+<!-- donations/templates/login.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block header %}
+<div class="custom-header">
+  <div class="custom-form-container">
+    <h2>Zaloguj się</h2>
+    <form id="loginForm" method="POST" action="{% url 'donations:login' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>
+          <input type="email" name="email" placeholder="Email" required>
+        </label>
+        {% if errors.email %}
+        <span class="error-message">{{ errors.email }}</span>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label>
+          <input type="password" name="password" placeholder="Hasło" required>
+        </label>
+        {% if errors.password %}
+        <span class="error-message">{{ errors.password }}</span>
+        {% endif %}
+        <a href="{% url 'donations:password_reset' %}" class="btn btn--small btn--without-border reset-password">Przypomnij hasło</a>
+      </div>
+      <div class="form-group form-group--buttons">
+        <a href="{% url 'donations:register' %}" class="btn btn--without-border">Załóż konto</a>
+        <button class="btn" type="submit">Zaloguj się</button>
+      </div>
+    </form>
+    <div id="successMessage" style="display: none;">Login successful!</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}{% endblock %}

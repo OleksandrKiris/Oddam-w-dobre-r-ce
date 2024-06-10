@@ -16,13 +16,13 @@ Thumbs.db
 *.sqlite3
 
 # Конфигурация среды разработки
-.vscode/
+.vscode/static/
 .idea/
 *.swp
 
 # Статические файлы
 staticfiles/
-static/
+
 media/
 
 # Сборки и отладка
@@ -75,3 +75,9 @@ coverage.xml
 Dockerfile
 docker-compose.yml
 __MACOSX
+
+.idea
+.vscode
+node_modules
+package-lock.json
+project

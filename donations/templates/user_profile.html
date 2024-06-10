@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil użytkownika{% endblock %}
+
+{% block header %}
+<div class="profile-background">
+    <div class="profile-container">
+        <div class="profile-card">
+            <h2>Profil użytkownika</h2>
+            <ul class="profile-details">
+                <li><strong>Imię:</strong> {{ first_name }}</li>
+                <li><strong>Nazwisko:</strong> {{ last_name }}</li>
+                <li><strong>Email:</strong> {{ email }}</li>
+                <li><strong>Data rejestracji:</strong> {{ date_joined|date:"d M Y H:i" }}</li>
+                <li><strong>Ostatnie logowanie:</strong> {{ last_login|date:"d M Y H:i" }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="content-card">
+        <h3>Lista przekazanych darów</h3>
+
+        <form method="get" action="{% url 'donations:user_profile' %}">
+            <div class="search-filter-container">
+                <label class="search-label">
+                    <input type="text" name="search" placeholder="Szukaj..." value="{{ search_query }}" class="search-input">
+                </label>
+                <label class="filter-label">
+                    <select name="status" class="filter-select">
+                        <option value="">Wszystkie statusy</option>
+                        <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>Oczekujące</option>
+                        <option value="in_progress" {% if filter_status == 'in_progress' %}selected{% endif %}>W trakcie realizacji</option>
+                        <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Zrealizowane</option>
+                    </select>
+                </label>
+                <button type="submit" class="filter-button">Filtruj</button>
+            </div>
+        </form>
+
+        <div id="donations-table-container">
+            <table class="donations-table">
+                <thead>
+                    <tr>
+                        <th>Ilość worków</th>
+                        <th>Organizacja</th>
+                        <th>Kategorie</th>
+                        <th>Data odbioru</th>
+                        <th>Status</th>
+                        <th>Archiwizacja przez użytkownika</th>
+                    </tr>
+                </thead>
+                <tbody id="donations-list">
+                    {% for donation in donations %}
+                    <tr class="donation-row {% if donation.is_taken_by_user %}archived{% endif %}" data-donation-id="{{ donation.id }}">
+                        <td>{{ donation.quantity }}</td>
+                        <td>{{ donation.institution.name }}</td>
+                        <td>
+                            {% for category in donation.categories.all %}
+                                {{ category.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ donation.pick_up_date|date:"d M Y" }} {{ donation.pick_up_time|time:"H:i" }}</td>
+                        <td>{{ donation.get_status_display }}</td>
+                        <td>
+                            <button type="button" class="btn-archive-user" onclick="toggleArchive({{ donation.id }}, 'user')">
+                                {% if donation.is_taken_by_user %}Oznacz jako niezabrane{% else %}Oznacz jako zabrane{% endif %}
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">Brak przekazanych darów</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                <span class="step-links">
+                    {% if donations.has_previous %}
+                        <a href="?page=1" class="pagination-link">&laquo; first</a>
+                        <a href="?page={{ donations.previous_page_number }}" class="pagination-link">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ donations.number }} of {{ donations.paginator.num_pages }}.
+                    </span>
+
+                    {% if donations.has_next %}
+                        <a href="?page={{ donations.next_page_number }}" class="pagination-link">next</a>
+                        <a href="?page={{ donations.paginator.num_pages }}" class="pagination-link">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
