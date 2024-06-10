@@ -392,7 +392,8 @@ def password_reset_request(request):
             email.send()
 
             # Powiadomienie użytkownika, że link do resetowania hasła został wysłany
-            return render(request, 'password_reset.html', {'message': 'Link do resetowania hasła został wysłany na Twój email.'})
+            return render(request, 'password_reset.html',
+                          {'message': 'Link do resetowania hasła został wysłany na Twój email.'})
         else:
             # Powiadomienie użytkownika, że podany email nie został znaleziony
             return render(request, 'password_reset.html', {'message': 'Email nie został znaleziony.'})
@@ -442,7 +443,6 @@ def password_reset_confirm(request, uidb64=None, token=None):
             return render(request, 'activation_invalid.html')
     # Renderowanie strony potwierdzenia resetu hasła
     return render(request, 'password_reset_confirm.html')
-
 
 
 # Widok kontaktowy
